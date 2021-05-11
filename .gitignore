@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+#I don't what type is it
+*.vscode
