@@ -33,3 +33,6 @@
 
 # vim tmp
 *.swp
+
+#I don't what type is it
+*.vscode
