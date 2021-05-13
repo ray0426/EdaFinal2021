@@ -81,6 +81,8 @@ struct Instance {
 // Voltage-area
 struct VoltageArea {
     string name;
+    int NumGGrid;
+    int NumInst;
     vector<GGrid> ggrids;
     vector<Instance> instances;
 };
@@ -110,13 +112,13 @@ class Problem {
         int NumCellInst;
         vector<CellInst> cellinsts;
 
-        int NumNets;
+        int NumNet;
         vector<Net> nets;
 
-        int NumVoltageAreas;
+        int NumVoltageArea;
         vector<VoltageArea> voltageAreas;
 
-        int NumRoutes;
+        int NumRoute;
         vector<Route> routes;
 
         Problem(void);
@@ -138,7 +140,7 @@ void Problem::readCase(char* inputfile) {
     ifstream file(inputfile); // read input file
     int i, j; // array index
 
-    cout << "=====start loading input file: " << inputfile << "=====" << endl;
+    cout << "\033[1;32mstart loading input file: " << inputfile << "\033[0m\n";
     //while (getline (ReadFile, line, ' ')) {
     //    cout << line << endl;
     //}
@@ -214,8 +216,8 @@ void Problem::readCase(char* inputfile) {
 
     struct NetPin netpin;
     struct Net net;
-    file >> str >> this->NumNets;
-    for (i = 0; i < this->NumNets; i++) {
+    file >> str >> this->NumNet;
+    for (i = 0; i < this->NumNet; i++) {
         file >> str >> net.name >> net.NumPins >>
             net.minRouteLayConst >> net.weight;
         for (j = 0; j < net.NumPins; j++) {
@@ -238,95 +240,44 @@ void Problem::readCase(char* inputfile) {
     //cout << this->nets[5].pins[1].masterPinName << endl;
     //cout << this->nets[5].pins[2].masterPinName << endl;
 
+    struct Route route;
+    file >> str >> this->NumRoute;
+    for (i = 0; i < this->NumRoute; i++) {
+        file >> route.srowIdx >> route.scolIdx >> route.slayIdx
+            >> route.erowIdx >> route.ecolIdx >> route.elayIdx >> route.name;
+        this->routes.push_back(route);
+    }
+    //cout << this->routes[0].name << endl;
+    //cout << this->routes[1].srowIdx << endl;
+    //cout << this->routes[41].ecolIdx << endl;
 
-/*
-NumNets 6
-Net N1 3 M2 1.5
-Pin C1/P2
-Pin C5/P2
-Pin C4/P2
-Net N2 4 NoCstr 2.0
-Pin C2/P2
-Pin C5/P1
-Pin C8/P2
-Pin C7/P1
-Net N3 3 NoCstr 1.5
-Pin C2/P1
-Pin C4/P1
-Pin C6/P1
-Net N4 2 NoCstr 1.0
-Pin C1/P1
-Pin C3/P2
-Net N5 2 NoCstr 1.0
-Pin C2/P3
-Pin C3/P1
-Net N6 3 NoCstr 1.5
-Pin C6/P2
-Pin C7/P2
-Pin C8/P1
-NumRoutes 42
-4 1 1 4 1 3 N1
-4 1 3 4 4 3 N1
-4 4 3 4 4 1 N1
-4 3 3 4 3 2 N1
-4 3 2 1 3 2 N1
-1 3 2 1 3 3 N1
-1 3 3 1 2 3 N1
-1 2 3 1 2 2 N1
-1 2 2 2 2 2 N1
-2 2 2 2 2 1 N1
-5 2 1 5 3 1 N2
-5 3 1 5 3 2 N2
-5 3 2 4 3 2 N2
-4 3 2 4 3 3 N2
-4 3 3 4 4 3 N2
-4 4 3 4 4 1 N2
-4 4 1 4 5 1 N2
-4 5 1 4 5 2 N2
-4 5 2 3 5 2 N2
-3 5 2 3 5 1 N2
-3 5 1 3 4 1 N2
-3 4 1 3 4 2 N2
-3 4 2 2 4 2 N2
-2 4 2 2 4 1 N2
-2 2 1 2 2 3 N3
-2 2 3 2 4 3 N3
-2 4 3 2 4 1 N3
-2 2 2 5 2 2 N3
-4 1 1 4 1 2 N4
-4 1 2 2 1 2 N4
-2 1 2 2 1 1 N4
-2 1 1 2 2 1 N4
-2 2 1 2 2 2 N5
-2 2 2 5 2 2 N5
-5 2 2 5 2 1 N5
-2 4 1 2 4 2 N6
-2 4 2 1 4 2 N6
-1 4 2 1 4 1 N6
-1 4 1 1 5 1 N6
-1 5 1 1 5 2 N6
-1 5 2 3 5 2 N6
-3 5 2 3 5 1 N6
-NumVoltageAreas 1
-Name V1
-GGrids 9
-2 1
-2 2
-2 3
-3 1
-3 2
-3 3
-4 1
-4 2
-4 3
-Instances 2
-C1
-C3
-*/
-
-// ========================
-//    cout << "|" << str << "|" << endl;
+    struct GGrid ggrid;
+    struct Instance inst;
+    struct VoltageArea va;
+    file >> str >> this->NumVoltageArea;
+    for (i = 0; i < this->NumVoltageArea; i++) {
+        file >> str >> va.name;
+        file >> str >> va.NumGGrid;
+        for (j = 0; j < va.NumGGrid; j++) {
+            file >> ggrid.rowIdx >> ggrid.colIdx;
+            va.ggrids.push_back(ggrid);
+        }
+        file >> str >> va.NumInst;
+        for (j = 0; j < va.NumInst; j++) {
+            file >> inst.name;
+            va.instances.push_back(inst);
+        }
+        this->voltageAreas.push_back(va);
+        va.ggrids.clear();
+        va.instances.clear();
+    }
+    //cout << this->voltageAreas[0].name << endl;
+    //cout << this->voltageAreas[0].ggrids[8].colIdx << endl;
+    //cout << this->voltageAreas[0].instances[1].name << endl;
+    //
     file.close();
+    cout << "\033[1;32mloading input file complete\033[0m" << endl;
+
 }
 
 int main (int argc, char** argv) {
