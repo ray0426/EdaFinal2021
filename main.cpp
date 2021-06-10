@@ -11,11 +11,12 @@ int main (int argc, char** argv) {
     cout << "test0" << endl;
     pro->readCase(argv[1]);
 
-    vector<Net2D> flattenNet = pinThree2Two(pro);
+    vector<Net2D> flattenNet = Three2Two(pro);
     vector<vector<EdgeSupply>> SupplyGraph = GenerateSupplyGraph(pro);
 
     delete pro;
     return 0;
 }
+
 
 

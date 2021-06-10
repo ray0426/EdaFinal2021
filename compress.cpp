@@ -3,27 +3,35 @@
 #include <string>
 #include "problem.h"
 #include "compress.h"
+#include <algorithm>
 using namespace std;
 
-vector<Net2D> pinThree2Two (Problem* pro) {
-    vector<Net2D> flatenNets;
+vector<Net2D> Three2Two (Problem* pro) {
+    vector<Net2D> flatenNets;   //return
+
     CellInst currentCellinst;
-    string instName;
+    string instName;            
     Net CurrentNet;
-    Pin pin;
-    Net2D flatenNet;
+    Route CurrentRoute;         //now using
+
+    Pin pin;                    
     vector<Pin> pins;
-    //making ele of Net2D
+    Route2D flatenRoute;
+    Net2D flatenNet;            //buffer
+    
+    //pin of Net2D,this part of Net2D are loss of routing
     for (int i = 0; i < pro->NumNet; i++) {
         CurrentNet = pro->nets[i];
 
+        //reseting
         flatenNet.pin2Ds.clear();
+        flatenNet.route2Ds.clear();
+
+        //seting name and weight
         flatenNet.name = CurrentNet.name;
-        // flatenNet.minRouteLayConst = CurrentNet.minRouteLayConst;
         flatenNet.weight = CurrentNet.weight;
 
         pins.clear();
-
         //finding flatenNet.pin2Ds
         for (int j = 0; j < CurrentNet.NumPins; j++) {
             instName = CurrentNet.pins[j].instName;
@@ -40,6 +48,24 @@ vector<Net2D> pinThree2Two (Problem* pro) {
         flatenNet.pin2Ds = pins;
         flatenNets.push_back(flatenNet);
     }
+    //now we put routing into Net2Ds
+    for (int i = 0; i < pro->NumRoute; i++){
+        CurrentRoute = pro->routes[i];
+        
+        if (CurrentRoute.elayIdx == CurrentRoute.slayIdx) continue;
+
+        for (Net2D planedNet: flatenNets) {
+            if (planedNet.name == CurrentRoute.name) {
+                flatenRoute.erowIdx = CurrentRoute.erowIdx;
+                flatenRoute.ecolIdx = CurrentRoute.ecolIdx;
+                flatenRoute.srowIdx = CurrentRoute.srowIdx;
+                flatenRoute.scolIdx = CurrentRoute.scolIdx;
+                planedNet.route2Ds.push_back(flatenRoute);
+                break;
+            }
+        }
+    }
+    
     return flatenNets;
 }
 vector<vector<EdgeSupply>> GenerateSupplyGraph (Problem* pro) {
