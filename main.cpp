@@ -7,8 +7,11 @@
 using namespace std;
 
 int main (int argc, char** argv) {
+    if (!argv[1]) {
+        cout << "Please input case file"<< endl;
+        return -1;
+    }
     Problem* pro = new Problem;
-    cout << "test0" << endl;
     pro->readCase(argv[1]);
 
     vector<Net2D> flattenNet = Three2Two(pro);
