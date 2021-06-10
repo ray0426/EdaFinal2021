@@ -45,35 +45,46 @@ vector<Net2D> pinThree2Two (Problem* pro) {
 vector<vector<EdgeSupply>> GenerateSupplyGraph (Problem* pro) {
     int hSupply;
     int vSupply;
+    int rowBound = pro->GGridBD[2];
+    int colBound = pro->GGridBD[3];
     vector<vector<EdgeSupply>> graph;
     vector<EdgeSupply> rowGraph;
     EdgeSupply grid;
 
+    //counting defaultsupply
     for (Layer layer: pro->layers) {
         if (layer.direction == 'H')
             hSupply += layer.defaultsupply;
         else if (layer.direction == 'V')
             vSupply += layer.defaultsupply;
     }
-
-    for (int i = 0; i < pro->GGridBD[2]; i++) {
+    //assert defaultsupply to grids
+    for (int i = 0; i < rowBound; i++) {
         rowGraph.clear();
-        for (int j = 0; j < pro->GGridBD[3]; j++) {
+        for (int j = 0; j < colBound; j++) {
             grid.col = (i == 0) ? 0 : vSupply;
             grid.row = (j == 0) ? 0 : hSupply;
             rowGraph.push_back(grid);
         }
         graph.push_back(rowGraph);
     }
-
+    //change grids of nondefaultsupply
     for (NonDefaultSupply nd: pro->NonDefaultSupplies) {
-        for (Layer layer: pro->layers) {
-            if (layer.direction == 'H')
-                graph[nd.rowIdx][nd.colIdx].row += nd.relatedValue;
-            else if (layer.direction == 'V')
-                graph[nd.rowIdx][nd.colIdx].col += nd.relatedValue;
-            break;
+        int rId = nd.rowIdx;
+        int cId = nd.colIdx;
+        int delta = nd.relatedValue;
+        Layer layer = pro->layers[nd.LayIdx];
+
+        if (layer.direction == 'H') graph[rId][cId].row += delta;
+        else if (layer.direction == 'V') graph[rId][cId].col += delta;
+    }
+    //gridsupply to edgesupply
+    for (int i = rowBound - 1; i >= 0; i--) {
+        for (int j = colBound - 1; j >= 0; j--) {
+            graph[i][j].row = (i == 0) ? 0 : min(graph[i][j].row, graph[i - 1][j].row);
+            graph[i][j].col = (j == 0) ? 0 : min(graph[i][j].col, graph[i][j - 1].col);
         }
     }
+    
     return graph;
 }
