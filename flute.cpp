@@ -8,6 +8,22 @@ struct Permu {
     vector<vector<int>> list;
 };
 
+struct Edge2D { // eq. Route2D in compress.h and Route in problem.h
+    int srow, scol;
+    int erow, ecol;
+};
+
+struct PP {
+    vector<int> powv; // e.g. seq=3142 (1,2,1,1,1,1) size: 2(n - 1)
+    vector<Edge2D> post;
+};
+
+struct PPtable {
+    int n;
+    vector<vector<int>> list;
+    vector<PP> result;
+};
+
 vector<vector<int>> permutations(int n);
 int idxOfPosSeq(vector<int> posSeq);
 int factorial(int m, int n);
@@ -16,6 +32,8 @@ int main (void) {
     int i, j;
     vector<Permu> permus;
     struct Permu permu;
+    vector<PPtable> pptables;
+    struct PPtable pptable;
 
     for (i = 2; i <= 4; i++) {
         permu.n = i;
@@ -23,11 +41,29 @@ int main (void) {
         permus.push_back(permu);
     }
 
-//    for (i = 0; i < 24; i++) {
-//    cout << permus[2].list[i][0] << permus[2].list[i][1] <<
-//        permus[2].list[i][2] << permus[2].list[i][3] << ": ";
-//        cout << idxOfPosSeq(permus[2].list[i]) << endl;
-//    }
+    for (i = 0; i <= 2; i++) {
+        pptable.n = i;
+ //       cout << permus[i].list.size() << endl;
+        pptable.list.resize(permus[i].list.size());
+        for (j = 0; j < permus[i].list.size(); j++) {
+            pptable.list[idxOfPosSeq(permus[i].list[j])] = permus[i].list[j];
+        }
+        pptables.push_back(pptable);
+        pptable.list.clear();
+    }
+
+/*    cout << "permutation" << endl;
+    for (i = 0; i < 24; i++) {
+        cout << permus[2].list[i][0] << permus[2].list[i][1] <<
+            permus[2].list[i][2] << permus[2].list[i][3] << ": ";
+            cout << idxOfPosSeq(permus[2].list[i]) << endl;
+    }
+    cout << "in index" << endl;
+    for (i = 0; i < 24; i++) {
+        cout << pptables[2].list[i][0] << pptables[2].list[i][1] <<
+            pptables[2].list[i][2] << pptables[2].list[i][3] << endl;
+    }
+*/
 
 //    cout << permus.size() << endl;
 //    cout << permus[0].list.size() << endl;
