@@ -11,24 +11,32 @@ struct EdgeSupply {
     int row;  //upSupply
     int col;  //leftSupply
 };
-struct Pin {
+struct Pos {
     int row;
     int col;
 };
 
 struct Route2D {
-    int srowIdx, scolIdx;
-    int erowIdx, ecolIdx;
+    Pos sIdx;
+    Pos eIdx;
 };
 struct Net2D {
-    vector<Pin> pin2Ds;
+    vector<Pos> pin2Ds;
     string name;
     float weight;
     vector<Route2D> route2Ds;
 };
 
+struct TwoPinRoute2D {
+    Pos sPin;
+    Pos ePin;
+    string name;
+    float weight;
+    vector<Route2D> route;
+};
+
 vector<vector<EdgeSupply>> GenerateSupplyGraph(Problem *pro);
 vector<Net2D> Three2Two(Problem *pro);
-
+TwoPinRoute2D Multi2TwoPinRoute(Net2D *net, Pos sPin, Pos ePin);
 
 #endif

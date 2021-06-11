@@ -14,8 +14,8 @@ vector<Net2D> Three2Two (Problem* pro) {
     Net CurrentNet;
     Route CurrentRoute;         //now using
 
-    Pin pin;                    
-    vector<Pin> pins;
+    Pos pin;                    
+    vector<Pos> pins;
     Route2D flatenRoute;
     Net2D flatenNet;            //buffer
     
@@ -52,14 +52,14 @@ vector<Net2D> Three2Two (Problem* pro) {
     for (int i = 0; i < pro->NumRoute; i++){
         CurrentRoute = pro->routes[i];
         
-        if (CurrentRoute.elayIdx == CurrentRoute.slayIdx) continue;
+        if (CurrentRoute.elayIdx != CurrentRoute.slayIdx) continue;
 
-        for (Net2D planedNet: flatenNets) {
+        for (auto planedNet: flatenNets) {
             if (planedNet.name == CurrentRoute.name) {
-                flatenRoute.erowIdx = CurrentRoute.erowIdx;
-                flatenRoute.ecolIdx = CurrentRoute.ecolIdx;
-                flatenRoute.srowIdx = CurrentRoute.srowIdx;
-                flatenRoute.scolIdx = CurrentRoute.scolIdx;
+                flatenRoute.eIdx.row = CurrentRoute.erowIdx;
+                flatenRoute.eIdx.col = CurrentRoute.ecolIdx;
+                flatenRoute.sIdx.row = CurrentRoute.srowIdx;
+                flatenRoute.sIdx.col = CurrentRoute.scolIdx;
                 planedNet.route2Ds.push_back(flatenRoute);
                 break;
             }
@@ -104,6 +104,9 @@ vector<vector<EdgeSupply>> GenerateSupplyGraph (Problem* pro) {
         if (layer.direction == 'H') graph[rId][cId].row += delta;
         else if (layer.direction == 'V') graph[rId][cId].col += delta;
     }
+
+    //blockage also have demand
+
     //gridsupply to edgesupply
     for (int i = rowBound - 1; i >= 0; i--) {
         for (int j = colBound - 1; j >= 0; j--) {
@@ -113,4 +116,83 @@ vector<vector<EdgeSupply>> GenerateSupplyGraph (Problem* pro) {
     }
     
     return graph;
+}
+TwoPinRoute2D Multi2TwoPinRoute (Net2D* net, Pos sPin, Pos ePin) {
+    TwoPinRoute2D TwoPinNet;    //result
+    TwoPinNet.name = net->name;
+    TwoPinNet.weight = net->weight;
+    TwoPinNet.ePin = ePin;
+    TwoPinNet.sPin = sPin;      //setting
+    Route2D line;               //buffer
+    
+    //return with ePin to sPin
+    vector<Pos> rawRoute = FindRoute(net->route2Ds,sPin,ePin);  
+    
+    for (int i = rawRoute.size() - 1; i > 0; i--) {
+        line.sIdx = rawRoute[i];
+        line.eIdx = rawRoute[i - 1];
+        TwoPinNet.route.push_back(line);
+    }
+    return TwoPinNet;
+}
+//not sure whether ref is good
+//this two part can be private
+vector<Pos> FindRoute (vector<Route2D> ref, Pos sPin, Pos ePin) {
+    vector<Pos> route;
+    Pos end;
+    Pos start;
+    Pos Pin;
+    Route2D line;
+    vector<Route2D> nextRef = ref;
+    char achivable;
+
+    if (sPin.col == ePin.col && sPin.row == ePin.row) {
+        route.push_back(ePin);
+        return route;
+    }
+
+    for (int j = 0; j < ref.size(); j++) {
+        line = ref[j];
+        end = line.eIdx;
+        start = line.sIdx;
+
+        achivable = isPininRoute(end, start, sPin);
+
+        if (achivable == 'v') {
+            Pin.col = start.col;
+            for (int i = min(end.row, start.row); i <= max(end.row, start.row); i++){
+                nextRef.erase(nextRef.begin() + j);
+                Pin.row = i;
+                route = FindRoute(nextRef, Pin, ePin);
+                nextRef = ref;
+                if (!route.empty()) {
+                    route.push_back(sPin);
+                    return route;
+                }
+            }
+        } else if (achivable == 'h') {
+            Pin.row = start.row;
+            for (int i = min(end.col, start.col); i <= max(end.col, start.col); i++){
+                nextRef.erase(nextRef.begin() + j);
+                Pin.col = i;
+                route = FindRoute(nextRef, Pin, ePin);
+                nextRef = ref;
+                if (!route.empty()) {
+                    route.push_back(sPin);
+                    return route;
+                }
+            }
+        }
+    }
+    return vector<Pos>();
+}
+char isPininRoute(Pos end, Pos start, Pos Pin) {
+    if (end.col == start.col) {
+        if (min(end.row,start.row) <= Pin.row && Pin.row <= max(end.row,start.row))
+            return 'v';     //line is vertical
+    } else if (start.row == end.row) {
+        if (min(end.col,start.col) <= Pin.col && Pin.col <= max(end.col,start.col))
+            return 'h';     //line is horrizontal
+    }
+    return '\0';
 }
