@@ -8,14 +8,19 @@ struct Permu {
     vector<vector<int>> list;
 };
 
-struct Edge2D { // eq. Route2D in compress.h and Route in problem.h
+struct Pin {
+    int row;
+    int col;
+};
+
+struct Edge { // eq. Route2D in compress.h and Route in problem.h
     int srow, scol;
     int erow, ecol;
 };
 
 struct PP {
     vector<int> powv; // e.g. seq=3142 (1,2,1,1,1,1) size: 2(n - 1)
-    vector<Edge2D> post;
+    vector<Edge> post;
 };
 
 struct PPtable {
@@ -24,16 +29,31 @@ struct PPtable {
     vector<PP> result;
 };
 
+struct Graph {
+    vector<Pin> pins;
+    vector<Edge> edges;
+};
+
 vector<vector<int>> permutations(int n);
 int idxOfPosSeq(vector<int> posSeq);
 int factorial(int m, int n);
+Graph genGraph(vector<int> posSeq);
+//type genLUT(sometype graph);                  // to be complete
+//Graph genPOST(sometype graph);
+//type Expand(sometype graph, sometype bd);     // to be complete
+//type Compact(sometype graph, sometype bd);    // to be complete
+//type Prune(sometype graph1, sometype graph2); // to be complete
 
 int main (void) {
-    int i, j;
+    int i, j, k;
+    int idx;
+    int size;
     vector<Permu> permus;
-    struct Permu permu;
+    Permu permu;
     vector<PPtable> pptables;
-    struct PPtable pptable;
+    PPtable pptable;
+//    vector<Pin> Pins;            // to be decide
+    Graph graph;              // to be complete
 
     for (i = 2; i <= 4; i++) {
         permu.n = i;
@@ -41,12 +61,23 @@ int main (void) {
         permus.push_back(permu);
     }
 
-    for (i = 0; i <= 2; i++) {
-        pptable.n = i;
- //       cout << permus[i].list.size() << endl;
-        pptable.list.resize(permus[i].list.size());
-        for (j = 0; j < permus[i].list.size(); j++) {
-            pptable.list[idxOfPosSeq(permus[i].list[j])] = permus[i].list[j];
+    for (i = 0; i <= 2; i++) {    // for each amount of pins
+        pptable.n = i + 1;
+        size = permus[i].list.size();
+        pptable.list.resize(size);
+        pptable.result.resize(size);
+        for (j = 0; j < size; j++) {   // for each permutation
+            idx = idxOfPosSeq(permus[i].list[j]);
+            pptable.list[idx] = permus[i].list[j];
+            /*for (k = 0; k < i + 1; k++) {
+                cout << permus[i].list[j][k];
+            }
+            cout << ": " << idxOfPosSeq(permus[i].list[j]) << "     ";
+            */
+
+            graph = genGraph(permus[i].list[j]);
+//            cout << graph.pins[2].col << endl;
+//            pptable.result[idx] = GenLUT(graph);
         }
         pptables.push_back(pptable);
         pptable.list.clear();
@@ -150,3 +181,22 @@ int factorial(int m, int n) {
     for (i = m + 1; i <= n; i++) num *= i;
     return num;
 }
+
+
+//struct Graph {
+//    vector<Pin> pins;
+//    vector<Edge> edges;
+//};
+
+Graph genGraph(vector<int> posSeq) {  // posSeq contains 1~n
+    int i, j;
+    int n = posSeq.size();
+    Graph graph;
+
+    graph.pins.resize(n);
+    for (i = 0; i < n; i++) {         // row, col from 1 to n
+        graph.pins[i] = (Pin){.row = i + 1, .col = posSeq[i]};
+    }
+    return graph;
+}
+
