@@ -9,6 +9,8 @@ struct Permu {
 };
 
 vector<vector<int>> permutations(int n);
+int idxOfPosSeq(vector<int> posSeq);
+int factorial(int m, int n);
 
 int main (void) {
     int i, j;
@@ -20,18 +22,20 @@ int main (void) {
         permu.list = permutations(i);
         permus.push_back(permu);
     }
+
+//    for (i = 0; i < 24; i++) {
+//    cout << permus[2].list[i][0] << permus[2].list[i][1] <<
+//        permus[2].list[i][2] << permus[2].list[i][3] << ": ";
+//        cout << idxOfPosSeq(permus[2].list[i]) << endl;
+//    }
+
 //    cout << permus.size() << endl;
+//    cout << permus[0].list.size() << endl;
+//    cout << permus[1].list.size() << endl;
+//    cout << permus[2].list.size() << endl;
 
 //    cout << permus[2].list[2][0] << permus[2].list[2][1] <<
 //        permus[2].list[2][2] << permus[2].list[2][3] << endl;
-
-//    vector<Permu> permus;
-//    struct Permu permu;
-
-//    for (i = 1; i < 5; i++) {
-//        permu.n = i;
-
-//    }
 
     return 0;
 }
@@ -81,4 +85,32 @@ vector<vector<int>> permutations(int n) {
 //    cout << "finish: " << n << endl;
     reverse(permN.begin(), permN.end());
     return permN;
+}
+
+int idxOfPosSeq(vector<int> posSeq) {
+    int n = posSeq.size();
+    int i, j, k;
+    int count;
+    int index = 0;
+    int temp;
+
+    for (i = 1; i <= n; i++) {
+        count = 0;
+        for (j = 1; j < i; j++)
+            if (posSeq[j - 1] < posSeq[i - 1])
+                count += 1;
+//        cout << count << " ";
+        index += count * factorial(i, n);
+    }
+//    cout << endl;
+    return index;
+}
+
+// (n!)/(m!)
+int factorial(int m, int n) {
+    int i;
+    int num = 1;
+
+    for (i = m + 1; i <= n; i++) num *= i;
+    return num;
 }
