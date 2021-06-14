@@ -196,7 +196,7 @@ vector<vector<EdgeSupply>>* Grid2EdgeSupply (vector<vector<GridSupply>>* graph) 
     }
     return Egraph;
 }
-void SupplyChange (vector<vector<GridSupply>>* graph, Net2D oldNet, Net2D newNet){
+void SupplyChange (vector<vector<GridSupply>>* graph, Net2D oldNet, Net2D newNet = {}){
     vector<Route2D> oldRoute = oldNet.route2Ds;
     vector<Route2D> newRoute = newNet.route2Ds;
 
@@ -268,6 +268,7 @@ vector<Route2D> FindRoute (vector<Route2D>* ref, Pos sPin, Pos ePin) {
     return route;
 }
 void FindRouteRaw (vector<Route2D>* route, vector<Route2D>* ref, Pos sPin, Pos ePin) {
+    //return with routing [(sPin,eP0),(sP1,eP1),....,(sPn,ePn),(ePin,ePin)]
     Pos end;
     Pos start;
     Pos Pin;
@@ -329,8 +330,63 @@ void FindRouteRaw (vector<Route2D>* route, vector<Route2D>* ref, Pos sPin, Pos e
     return;
     // return vector<Pos>();
 }
-
-
+//used only after finish a inter of Net rerouting
+void SortTaskQueue (vector<TwoPinRoute2D>* twoPinNets, vector<vector<GridSupply>>* graph) {
+    //not sure whether go wrong
+    return sort(twoPinNets->begin(), twoPinNets->end(), [graph](TwoPinRoute2D a, TwoPinRoute2D b)
+                { return score(a, graph) > score(b, graph); });
+}
+int score(TwoPinRoute2D twoPinNet, vector<vector<GridSupply>>* graph) {
+    int coefOver = 30;
+    int coefLen = 1;
+    int score = 0;
+    Pos start;
+    Pos end;
+    for (auto line: twoPinNet.route) {
+        start = line.sIdx;
+        end = line.eIdx;
+        score += coefLen * lineLen(start, end);
+        if (isLineVertical(start,end)){
+            for (int r = min(start.row, end.row); r <= max(start.row, end.row); r++) {
+                if (graph->at(r)[start.col].v < 0) {
+                    score += coefOver;
+                }
+            }
+        } else {
+            for (int c = min(start.col, end.col); c <= max(start.col, end.col); c++) {
+                if (graph->at(start.row)[c].h < 0) {
+                    score += coefOver;
+                }
+            }
+        }
+    }
+}
+int lineLen (Pos start, Pos end) {
+    if (isLineVertical(start,end)) {
+        return abs(start.row - end.row);
+    } else {
+        return abs(start.col - end.col);
+    }
+}
+TwoPinRoute2D* RerouteNet (vector<TwoPinRoute2D>* twoPinNets) {
+    //return the data location of most needing rerouting net
+    TwoPinRoute2D *net;
+    int currentBounding = -1;
+    for (int i = 0; i < twoPinNets->size(); i++) {
+        if (currentBounding == -1 || bounding(twoPinNets->at(i)) < currentBounding) {
+            currentBounding = bounding(twoPinNets->at(i));
+            net = &(twoPinNets->at(i));
+        }
+    }
+    return net;
+}
+int bounding (TwoPinRoute2D net) {
+    int len = 0;
+    for (auto line: net.route) {
+        len += lineLen(line.sIdx, line.eIdx);
+    }
+    return len;
+}
 //not sure whether ref is good
 //this two part can be private
 // vector<Pos> FindRoute_old (vector<Route2D> ref, Pos sPin, Pos ePin) {

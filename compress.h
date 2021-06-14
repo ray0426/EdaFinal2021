@@ -41,7 +41,9 @@ struct TwoPinRoute2D {
 
 vector<vector<GridSupply>>* GenerateGridSupplyGraph(Problem *pro);
 vector<vector<EdgeSupply>>* Grid2EdgeSupply(vector<vector<GridSupply>> *graph);
+void SupplyChange(vector<vector<GridSupply>> *graph, Net2D oldNet, Net2D newNet = {});
+
 vector<Net2D> Three2Two(Problem *pro);
 TwoPinRoute2D Multi2TwoPinRoute(Net2D *net, Pos sPin, Pos ePin);
-
+void SortTaskQueue(vector<TwoPinRoute2D> *twoPinNets, vector<vector<GridSupply>> *graph);
 #endif
