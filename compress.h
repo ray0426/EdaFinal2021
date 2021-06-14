@@ -11,6 +11,10 @@ struct EdgeSupply {
     int row;  //upSupply
     int col;  //leftSupply
 };
+struct GridSupply {
+    int h;
+    int v;
+};
 struct Pos {
     int row;
     int col;
@@ -35,7 +39,8 @@ struct TwoPinRoute2D {
     vector<Route2D> route;
 };
 
-vector<vector<EdgeSupply>> GenerateSupplyGraph(Problem *pro);
+vector<vector<GridSupply>>* GenerateGridSupplyGraph(Problem *pro);
+vector<vector<EdgeSupply>>* Grid2EdgeSupply(vector<vector<GridSupply>> *graph);
 vector<Net2D> Three2Two(Problem *pro);
 TwoPinRoute2D Multi2TwoPinRoute(Net2D *net, Pos sPin, Pos ePin);
 

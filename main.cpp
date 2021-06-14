@@ -14,8 +14,11 @@ int main (int argc, char** argv) {
     Problem* pro = new Problem;
     pro->readCase(argv[1]);
 
-    vector<Net2D> flattenNet = Three2Two(pro);
-    vector<vector<EdgeSupply>> SupplyGraph = GenerateSupplyGraph(pro);
+    vector<Net2D> flattenNet = Three2Two(pro);  //this is not pointer version
+    vector<vector<GridSupply>>* gSupGraph = GenerateGridSupplyGraph(pro);
+    vector<vector<EdgeSupply>>* eSupGraph = Grid2EdgeSupply(gSupGraph);
+    
+
 
     delete pro;
     return 0;
