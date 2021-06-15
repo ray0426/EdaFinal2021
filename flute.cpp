@@ -47,11 +47,11 @@ vector<vector<int>> permutations(int n);
 int idxOfPosSeq(vector<int> posSeq);
 int factorial(int m, int n);
 Graph genGraph(vector<int> posSeq);
-//type genLUT(sometype graph);                  // to be complete
+Graph genLUT(Graph graph);
 Graph genPOST(Graph graph, int Case);
-//type Expand(sometype graph, sometype bd);     // to be complete
-//type Compact(sometype graph, sometype bd);    // to be complete
+Graph CompactAndExpand(Graph graph, int bd);
 //type Prune(sometype graph1, sometype graph2); // to be complete
+//int Judge(Graph graph);
 void print(vector<vector<int>> vec);
 
 int main (void) {
@@ -232,6 +232,25 @@ Graph genGraph(vector<int> posSeq) {  // posSeq contains 1~n
     return graph;
 }
 
+Graph genLUT(Graph graph) {
+    if (graph.minrow == graph.maxrow && graph.mincol != graph.maxcol)
+        return genPOST(graph, 1);
+    else if (graph.minrow != graph.maxrow && graph.mincol == graph.maxcol)
+        return genPOST(graph, 2);
+    else if ((graph.maxrow - graph.minrow) == 1 &&
+             (graph.maxcol - graph.mincol) == 1)
+        return genPOST(graph, 3);
+    else if ("boundary b contains only 1 pin")
+        return CompactAndExpand(graph, b);
+    else if ("corner with one pin s.t. both adjacent b1, b2 have 1 other pin")
+        return Prune(CompactAndExpand(graph, b1)),
+                     CompactAndExpand(graph, b2));
+    else if ("7pins-all-on-bs")
+        cout << "not implement" << endl;
+    else
+        cout << "not implement" << endl;
+}
+
 // suppose each boundary contains at least a pin
 // three situations:
 // 1. compact to a single line(single row or single col)
@@ -281,6 +300,66 @@ Graph genPOST(Graph graph, int Case) {
 //        case 4:
         default:
             cout << "not implement" << endl;
+    }
+    return graph;
+}
+
+// bd 0:minrow, 1:maxrow, 2:mincol, 3:maxcol
+Graph CompactAndExpand(Graph graph, int bd) {
+    int i, j;
+    Graph graph1 = graph;
+
+    switch (bd) {
+        case 0:
+            for (j = graph.mincol; j <= graph.maxcol; j++)
+                if (graph1.pins[graph.minrow][j]) {
+                    graph1.pins[graph.minrow + 1][j] = 1;
+                    graph1.minrow += 1;
+                    graph.edges = GenLUT(graph1).edges;
+                    graph.edges.push_back(Edge(
+                        minrow, minrow + 1,
+                        j     , j
+                        ));
+                }
+            break;
+        case 1:
+            for (j = graph.mincol; j <= graph.maxcol; j++)
+                if (graph1.pins[graph.maxrow][j]) {
+                    graph1.pins[graph.maxrow - 1][j] = 1;
+                    graph1.maxrow -= 1;
+                    graph.edges = GenLUT(graph1).edges;
+                    graph.edges.push_back(Edge(
+                        maxrow - 1, maxrow,
+                        j         , j
+                        ));
+                }
+            break;
+        case 2:
+            for (i = graph.minrow; i <= graph.maxrow; i++)
+                if (graph1.pins[i][graph.mincol]) {
+                    graph1.pins[i][graph.mincol + 1] = 1;
+                    graph1.mincol += 1;
+                    graph.edges = GenLUT(graph1).edges;
+                    graph.edges.push_back(Edge(
+                        i     , i         ,
+                        mincol, mincol + 1
+                        ));
+                }
+            break;
+        case 3:
+            for (i = graph.minrow; i <= graph.maxrow; i++)
+                if (graph1.pins[i][graph.maxcol]) {
+                    graph1.pins[i][graph.maxcol - 1] = 1;
+                    graph1.maxcol -= 1;
+                    graph.edges = GenLUT(graph1).edges;
+                    graph.edges.push_back(Edge(
+                        i         , i     ,
+                        maxcol - 1, maxcol
+                        ));
+                }
+            break;
+        default:
+            cout << "something went wrong" << endl;
     }
     return graph;
 }
