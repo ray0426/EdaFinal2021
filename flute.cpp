@@ -3,6 +3,9 @@
 #include <algorithm>
 using namespace std;
 
+bool debug = false;
+int Totaln = 6;
+
 struct Permu {
     int n;
     vector<vector<int>> list;
@@ -55,10 +58,12 @@ int judgeCond2(Graph& graph);
 Graph CompactAndExpandAndPrune(Graph graph, int Case);
 //type Prune(sometype graph1, sometype graph2); // to be complete
 //int Judge(Graph graph);
-void print(vector<vector<int>> vec);
-void print(vector<vector<bool>> vec);
-void print(Graph graph);
-ostream& operator<<(ostream& os, Edge edge);
+void print(vector<vector<int>>& vec);
+void print(vector<vector<bool>>& vec);
+void print(Graph& graph);
+
+ostream& operator<<(ostream& os, Edge& edge);
+ostream& operator<<(ostream& os, vector<int>& vec);
 
 int main (void) {
     int i, j;
@@ -73,18 +78,20 @@ int main (void) {
     Graph graph;              // to be complete
     Graph graph1;
 
-    for (i = 2; i <= 4; i++) {
+    for (i = 2; i <= Totaln; i++) {
         permu.n = i;
         permu.list = permutations(i);
         permus.push_back(permu);
     }
 
-    for (i = 0; i <= 2; i++) {    // for each amount of pins
+    for (i = Totaln - 2; i <= Totaln - 2; i++) {    // for each amount of pins
         pptable.n = i + 1;
         size = permus[i].list.size();
         pptable.list.resize(size);
         pptable.result.resize(size);
+        cout << "size: " << size << endl;
         for (j = 0; j < size; j++) {   // for each permutation
+            //cout << "PosSeq: " << permus[i].list[j] << endl;
             idx = idxOfPosSeq(permus[i].list[j]);
             pptable.list[idx] = permus[i].list[j];
             /*for (k = 0; k < i + 1; k++) {
@@ -94,14 +101,14 @@ int main (void) {
             */
 
             graph = genGraph(permus[i].list[j]);
-            cout << "genGraph complete" << endl;
+            //cout << "genGraph complete" << endl;
             graph1 = genLUT(graph);
 
             cout << "permutation: " << j + 1 << endl;
-            print(graph1.pins);
-            cout << "edges: " << endl;
+            //print(graph1.pins);
+            //cout << "edges: " << endl;
             print(graph1);
-            cout << endl;
+            //cout << endl;
 //            cout << graph.pins[2].col << endl;
 //            pptable.result[idx] = GenLUT(graph);
         }
@@ -235,9 +242,10 @@ Graph genGraph(vector<int> posSeq) {  // posSeq contains 1~n
 }
 
 Graph genLUT(Graph graph) {
-//    cout << "genLUT:" << endl;
-//    print(graph);
+    if (debug) cout << "genLUT:" << endl;
+    if (debug) print(graph);
     int Case;
+    Graph graph1, graph2, graph3, graph4;
 
     // single row
     if (graph.minrow == graph.maxrow && graph.mincol != graph.maxcol)
@@ -261,7 +269,9 @@ Graph genLUT(Graph graph) {
     /*
     else if ("7pins-all-on-bs")
         cout << "not implement" << endl;*/
-    cout << "not implement" << endl;
+//    CompactAndExpandAndPrune(graph, 0);
+    return CompactAndExpandAndPrune(graph, 0);  // to be improve
+//    cout << "not implement in genLUT" << endl;
 }
 
 // suppose each boundary contains at least a pin
@@ -314,14 +324,14 @@ Graph genPOST(Graph graph, int Case) {
             break;
 //        case 4:
         default:
-            cout << "not implement" << endl;
+            cout << "not implement in genPOST, Case: " << Case << endl;
     }
     return graph;
 }
 
 // bd 0:minrow, 1:maxrow, 2:mincol, 3:maxcol
 int judgeCond1(Graph& graph) {
-//    cout << "judgeCond1" << endl;
+    if (debug) cout << "judgeCond1" << endl;
     int i, j;
     int count = 0;
 
@@ -356,7 +366,7 @@ int judgeCond1(Graph& graph) {
 
 // bd 0:minrow, 1:maxrow, 2:mincol, 3:maxcol
 Graph CompactAndExpand(Graph graph, int bd) {
-//    cout << "CAE" << endl;
+    if (debug) cout << "CAE  bd: " << bd << endl;
     int i, j;
     Graph graph1 = graph;
 
@@ -377,7 +387,6 @@ Graph CompactAndExpand(Graph graph, int bd) {
                         ));
                 }
             }
-            graph.minrow += 1;
             break;
         case 1:
             for (j = graph.mincol; j <= graph.maxcol; j++) {
@@ -395,7 +404,6 @@ Graph CompactAndExpand(Graph graph, int bd) {
                         ));
                 }
             }
-            graph.minrow -= 1;
             break;
         case 2:
             for (i = graph.minrow; i <= graph.maxrow; i++) {
@@ -413,7 +421,6 @@ Graph CompactAndExpand(Graph graph, int bd) {
                         ));
                 }
             }
-            graph.mincol += 1;
             break;
         case 3:
             for (i = graph.minrow; i <= graph.maxrow; i++) {
@@ -431,17 +438,17 @@ Graph CompactAndExpand(Graph graph, int bd) {
                         ));
                 }
             }
-            graph.mincol -= 1;
             break;
         default:
-            cout << "something went wrong" << endl;
+            cout << "something went wrong in CAE " <<
+                "with bd: " << bd << endl;
     }
     return graph;
 }
 
 // Case (row, col) 0:(min,min) 1:(min,max) 2:(max,min) 3:(max,max)
 int judgeCond2(Graph& graph) {
-//    cout << "judgeCond2" << endl;
+    if (debug) cout << "judgeCond2" << endl;
     int i, j;
     int countrow, countcol;
     int minrow = graph.minrow, mincol = graph.mincol;
@@ -511,44 +518,39 @@ int judgeCond2(Graph& graph) {
 }
 
 Graph CompactAndExpandAndPrune(Graph graph, int Case) {
-//    cout << "CAEAP" << endl;
+    if (debug) cout << "CAEAP  Case: " << Case << endl;
     int i, j;
     Graph graph1, graph2;
 
     switch (Case) {
         case 0: // (min, min)
             graph1 = CompactAndExpand(graph, 0);
-            graph2 = CompactAndExpand(graph1, 2);
-//            graph1 = CompactAndExpand(graph, 0);
-//            graph2 = CompactAndExpand(graph, 2);
+            //graph2 = CompactAndExpand(graph1, 2);
+            break;
         case 1: // (min, max)
             graph1 = CompactAndExpand(graph, 0);
-            graph2 = CompactAndExpand(graph1, 3);
-//            graph1 = CompactAndExpand(graph, 0);
-//            graph2 = CompactAndExpand(graph, 3);
+            //graph2 = CompactAndExpand(graph1, 3);
+            break;
         case 2: // (max, min)
             graph1 = CompactAndExpand(graph, 1);
-            graph2 = CompactAndExpand(graph1, 2);
-//            graph1 = CompactAndExpand(graph, 1);
-//            graph2 = CompactAndExpand(graph, 2);
+            //graph2 = CompactAndExpand(graph1, 2);
+            break;
         case 3: // (max, max)
             graph1 = CompactAndExpand(graph, 1);
-            graph2 = CompactAndExpand(graph1, 3);
-//            graph1 = CompactAndExpand(graph, 1);
-//            graph2 = CompactAndExpand(graph, 3);
+            //graph2 = CompactAndExpand(graph1, 3);
+            break;
         default:
             graph1 = CompactAndExpand(graph, 0);
-            graph2 = CompactAndExpand(graph1, 2);
-//            graph1 = CompactAndExpand(graph, 0);
-//            graph2 = CompactAndExpand(graph, 2);
-            cout << "something went wrong" << endl;
+            //graph2 = CompactAndExpand(graph1, 2);
+            cout << "something went wrong in CAEAP " <<
+                "with case: " << Case << endl;
     }
 //    return Prune(graph1, graph2);
 //    return Union(graph1, graph2);
-      return graph2;
+      return graph1;
 }
 
-void print(vector<vector<int>> vec) {
+void print(vector<vector<int>>& vec) {
     int i, j;
     int row = vec.size();
     int col;
@@ -562,7 +564,7 @@ void print(vector<vector<int>> vec) {
     }
 }
 
-void print(vector<vector<bool>> vec) {
+void print(vector<vector<bool>>& vec) {
     int i, j;
     int row = vec.size();
     int col;
@@ -582,7 +584,7 @@ void print(vector<vector<bool>> vec) {
 //  |    |
 //  |    |
 //  ------
-void print(Graph graph) {
+void print(Graph& graph) {
     int i, j;
     int n = graph.pins.size() - 1;
     vector<vector<bool>> h;
@@ -656,10 +658,19 @@ void print(Graph graph) {
     // cout << "end print graph====================" << endl;
 }
 
-ostream& operator<<(ostream& os, Edge edge) {
+ostream& operator<<(ostream& os, Edge& edge) {
     os << "srow: " << edge.srow << ", " <<
           "erow: " << edge.erow << ", " <<
           "scol: " << edge.scol << ", " <<
           "ecol: " << edge.ecol;
+    return os;
+}
+
+ostream& operator<<(ostream& os, vector<int>& vec) {
+    int i;
+
+    for (i = 0; i < vec.size(); i++) {
+        os << vec[i] << " ";
+    }
     return os;
 }
