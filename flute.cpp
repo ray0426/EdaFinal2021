@@ -530,6 +530,28 @@ void print(vector<vector<int>> vec) {
 //  ------
 void print(Graph graph) {
     int i, j;
+    int n = graph.pins.size();
+    vector<vector<bool>> h;
+    vector<vector<bool>> v;
+
+    h.resize(n - 1);
+    v.resize(n - 1);
+    for (i = 0; i < n - 1; i++) {
+        h[i].resize(n - 1);
+        v[i].resize(n - 1);
+        fill(h[i].begin(), h[i].end(), false);
+        fill(v[i].begin(), v[i].end(), false);
+    }
+    for (i = 0; i < graph.edges.size(); i++) {
+        if (graph.edges[i].srow == graph.edges[i].erow)
+            h[graph.edges[i].srow - 1][graph.edges[i].scol - 1] = true;
+        if (graph.edges[i].scol == graph.edges[i].ecol)
+            v[graph.edges[i].scol - 1][graph.edges[i].scol - 1] = true;
+    }
+
+    // for testing
+    // h[0][0] = true;
+    // v[0][1] = true;
 
     cout << "print graph========================" << endl;
     if (graph.pins.size() == 0) {
@@ -546,7 +568,12 @@ void print(Graph graph) {
         for (j = 1; j < graph.pins[0].size(); j++) {
             if (graph.pins[i][j]) cout << "·";
             else cout << " ";
-            if (j + 1 != graph.pins[0].size()) cout << " "; // -
+            if (j + 1 != graph.pins[0].size()) {
+                if (h[i - 1][j - 1])
+                    cout << "-";
+                else
+                    cout << " ";
+            }
         }
         cout << "|" << endl;
 
@@ -554,7 +581,10 @@ void print(Graph graph) {
         if (i + 1 != graph.pins.size()) {
             cout << "|";
             for (j = 1; j < graph.pins[0].size(); j++) {
-                cout << " "; // |
+                if (v[i - 1][j - 1])
+                    cout << "|";
+                else
+                    cout << " ";
                 if (j + 1 != graph.pins[0].size()) cout << " ";
             }
             cout << "|" << endl;
