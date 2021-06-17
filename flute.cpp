@@ -56,7 +56,9 @@ Graph CompactAndExpandAndPrune(Graph graph, int Case);
 //type Prune(sometype graph1, sometype graph2); // to be complete
 //int Judge(Graph graph);
 void print(vector<vector<int>> vec);
+void print(vector<vector<bool>> vec);
 void print(Graph graph);
+ostream& operator<<(ostream& os, Edge edge);
 
 int main (void) {
     int i, j;
@@ -94,17 +96,11 @@ int main (void) {
             graph = genGraph(permus[i].list[j]);
             graph1 = genPOST(graph, 3);
 
-            cout << "------------------" << endl;
+            cout << "permutation: " << j + 1 << endl;
             print(graph.pins);
-            cout << "size: " << graph1.edges.size() << endl;
             cout << "edges: " << endl;
-            for (k = 0; k < graph1.edges.size(); k++) {
-                cout << graph1.edges[k].srow << " " <<
-                        graph1.edges[k].erow << " " <<
-                        graph1.edges[k].scol << " " <<
-                        graph1.edges[k].ecol << endl;
-            }
-            print(graph);
+            print(graph1);
+            cout << endl;
 //            cout << graph.pins[2].col << endl;
 //            pptable.result[idx] = GenLUT(graph);
         }
@@ -297,6 +293,8 @@ Graph genPOST(Graph graph, int Case) {
                     ));
             break;
         case 3:
+//            cout << minrow << " " << maxrow << " " <<
+//                mincol << " " << maxcol << endl;
             graph.edges.push_back(Edge(
                 minrow, maxrow,
                 mincol, mincol
@@ -513,10 +511,24 @@ void print(vector<vector<int>> vec) {
     int row = vec.size();
     int col;
 
+    for (i = 1; i < row; i++) {
+        col = vec[i].size();
+        for (j = 1; j < col; j++) {
+            cout << vec[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
+void print(vector<vector<bool>> vec) {
+    int i, j;
+    int row = vec.size();
+    int col;
+
     for (i = 0; i < row; i++) {
         col = vec[i].size();
         for (j = 0; j < col; j++) {
-            cout << vec[i][j] << " ";
+            cout << (vec[i][j] == true) << " ";
         }
         cout << endl;
     }
@@ -530,30 +542,36 @@ void print(vector<vector<int>> vec) {
 //  ------
 void print(Graph graph) {
     int i, j;
-    int n = graph.pins.size();
+    int n = graph.pins.size() - 1;
     vector<vector<bool>> h;
     vector<vector<bool>> v;
 
-    h.resize(n - 1);
+    h.resize(n);
     v.resize(n - 1);
-    for (i = 0; i < n - 1; i++) {
+    for (i = 0; i < n; i++) {
         h[i].resize(n - 1);
-        v[i].resize(n - 1);
         fill(h[i].begin(), h[i].end(), false);
+    }
+    for (i = 0; i < n - 1; i++) {
+        v[i].resize(n);
         fill(v[i].begin(), v[i].end(), false);
     }
     for (i = 0; i < graph.edges.size(); i++) {
+//        cout << graph.edges[i] << endl;
         if (graph.edges[i].srow == graph.edges[i].erow)
             h[graph.edges[i].srow - 1][graph.edges[i].scol - 1] = true;
         if (graph.edges[i].scol == graph.edges[i].ecol)
-            v[graph.edges[i].scol - 1][graph.edges[i].scol - 1] = true;
+            v[graph.edges[i].srow - 1][graph.edges[i].scol - 1] = true;
     }
+
+//    print(h);
+//    print(v);
 
     // for testing
     // h[0][0] = true;
     // v[0][1] = true;
 
-    cout << "print graph========================" << endl;
+    // cout << "print graph========================" << endl;
     if (graph.pins.size() == 0) {
         cout << "graph is empty" << endl;
         return;
@@ -593,5 +611,13 @@ void print(Graph graph) {
 
     for (j = 0; j < graph.pins[0].size() * 2 - 1; j++) cout << "-";
     cout << endl;
-    cout << "end print graph====================" << endl;
+    // cout << "end print graph====================" << endl;
+}
+
+ostream& operator<<(ostream& os, Edge edge) {
+    os << "srow: " << edge.srow << ", " <<
+          "erow: " << edge.erow << ", " <<
+          "scol: " << edge.scol << ", " <<
+          "ecol: " << edge.ecol;
+    return os;
 }
