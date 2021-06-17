@@ -79,7 +79,7 @@ int main (void) {
         permus.push_back(permu);
     }
 
-    for (i = 0; i <= 0; i++) {    // for each amount of pins
+    for (i = 0; i <= 2; i++) {    // for each amount of pins
         pptable.n = i + 1;
         size = permus[i].list.size();
         pptable.list.resize(size);
@@ -94,10 +94,11 @@ int main (void) {
             */
 
             graph = genGraph(permus[i].list[j]);
-            graph1 = genPOST(graph, 3);
+            cout << "genGraph complete" << endl;
+            graph1 = genLUT(graph);
 
             cout << "permutation: " << j + 1 << endl;
-            print(graph.pins);
+            print(graph1.pins);
             cout << "edges: " << endl;
             print(graph1);
             cout << endl;
@@ -234,6 +235,8 @@ Graph genGraph(vector<int> posSeq) {  // posSeq contains 1~n
 }
 
 Graph genLUT(Graph graph) {
+//    cout << "genLUT:" << endl;
+//    print(graph);
     int Case;
 
     // single row
@@ -248,6 +251,7 @@ Graph genLUT(Graph graph) {
         return genPOST(graph, 3);
     // boundary contain only 1 pin
     Case = judgeCond1(graph);
+//    cout << "Case: " << Case << endl;
     if (Case != -1)
         return CompactAndExpand(graph, Case);
     // corner with one pin s.t. both adjacent b1, b2 have 1 other pin
@@ -317,91 +321,117 @@ Graph genPOST(Graph graph, int Case) {
 
 // bd 0:minrow, 1:maxrow, 2:mincol, 3:maxcol
 int judgeCond1(Graph& graph) {
+//    cout << "judgeCond1" << endl;
     int i, j;
     int count = 0;
 
     // minrow
-    for (j = graph.mincol; j <= graph.maxcol && count == 0; j++) {
+    for (j = graph.mincol; j <= graph.maxcol; j++) {
         count += graph.pins[graph.minrow][j];
     }
-    if (!count) return 0;
+    if (count == 1) return 0;
 
     // maxrow
     count = 0;
-    for (j = graph.mincol; j <= graph.maxcol && count == 0; j++) {
+    for (j = graph.mincol; j <= graph.maxcol; j++) {
         count += graph.pins[graph.maxrow][j];
     }
-    if (!count) return 1;
+    if (count == 1) return 1;
 
     // mincol
     count = 0;
-    for (i = graph.minrow; i <= graph.maxrow && count == 0; i++) {
+    for (i = graph.minrow; i <= graph.maxrow; i++) {
         count += graph.pins[i][graph.mincol];
     }
-    if (!count) return 2;
+    if (count == 1) return 2;
 
     // maxcol
     count = 0;
-    for (i = graph.minrow; i <= graph.maxrow && count == 0; i++) {
+    for (i = graph.minrow; i <= graph.maxrow; i++) {
         count += graph.pins[i][graph.maxcol];
     }
-    if (!count) return 3;
+    if (count == 1) return 3;
     return -1;
 }
 
 // bd 0:minrow, 1:maxrow, 2:mincol, 3:maxcol
 Graph CompactAndExpand(Graph graph, int bd) {
+//    cout << "CAE" << endl;
     int i, j;
     Graph graph1 = graph;
 
     switch (bd) {
         case 0:
-            for (j = graph.mincol; j <= graph.maxcol; j++)
+            for (j = graph.mincol; j <= graph.maxcol; j++) {
                 if (graph1.pins[graph.minrow][j]) {
                     graph1.pins[graph.minrow + 1][j] = 1;
-                    graph1.minrow += 1;
-                    graph.edges = genLUT(graph1).edges;
+                }
+            }
+            graph1.minrow += 1;
+            graph.edges = genLUT(graph1).edges;
+            for (j = graph.mincol; j <= graph.maxcol; j++) {
+                if (graph1.pins[graph.minrow][j]) {
                     graph.edges.push_back(Edge(
                         graph.minrow    , graph.minrow + 1,
                         j               , j
                         ));
                 }
+            }
+            graph.minrow += 1;
             break;
         case 1:
-            for (j = graph.mincol; j <= graph.maxcol; j++)
+            for (j = graph.mincol; j <= graph.maxcol; j++) {
                 if (graph1.pins[graph.maxrow][j]) {
                     graph1.pins[graph.maxrow - 1][j] = 1;
-                    graph1.maxrow -= 1;
-                    graph.edges = genLUT(graph1).edges;
+                }
+            }
+            graph1.maxrow -= 1;
+            graph.edges = genLUT(graph1).edges;
+            for (j = graph.mincol; j <= graph.maxcol; j++) {
+                if (graph1.pins[graph.maxrow][j]) {
                     graph.edges.push_back(Edge(
                         graph.maxrow - 1, graph.maxrow,
                         j               , j
                         ));
                 }
+            }
+            graph.minrow -= 1;
             break;
         case 2:
-            for (i = graph.minrow; i <= graph.maxrow; i++)
+            for (i = graph.minrow; i <= graph.maxrow; i++) {
                 if (graph1.pins[i][graph.mincol]) {
                     graph1.pins[i][graph.mincol + 1] = 1;
-                    graph1.mincol += 1;
-                    graph.edges = genLUT(graph1).edges;
+                }
+            }
+            graph1.mincol += 1;
+            graph.edges = genLUT(graph1).edges;
+            for (i = graph.minrow; i <= graph.maxrow; i++) {
+                if (graph1.pins[i][graph.mincol]) {
                     graph.edges.push_back(Edge(
                         i               , i               ,
                         graph.mincol    , graph.mincol + 1
                         ));
                 }
+            }
+            graph.mincol += 1;
             break;
         case 3:
-            for (i = graph.minrow; i <= graph.maxrow; i++)
+            for (i = graph.minrow; i <= graph.maxrow; i++) {
                 if (graph1.pins[i][graph.maxcol]) {
                     graph1.pins[i][graph.maxcol - 1] = 1;
-                    graph1.maxcol -= 1;
-                    graph.edges = genLUT(graph1).edges;
+                }
+            }
+            graph1.maxcol -= 1;
+            graph.edges = genLUT(graph1).edges;
+            for (i = graph.minrow; i <= graph.maxrow; i++) {
+                if (graph1.pins[i][graph.maxcol]) {
                     graph.edges.push_back(Edge(
                         i               , i           ,
                         graph.maxcol - 1, graph.maxcol
                         ));
                 }
+            }
+            graph.mincol -= 1;
             break;
         default:
             cout << "something went wrong" << endl;
@@ -411,6 +441,7 @@ Graph CompactAndExpand(Graph graph, int bd) {
 
 // Case (row, col) 0:(min,min) 1:(min,max) 2:(max,min) 3:(max,max)
 int judgeCond2(Graph& graph) {
+//    cout << "judgeCond2" << endl;
     int i, j;
     int countrow, countcol;
     int minrow = graph.minrow, mincol = graph.mincol;
@@ -421,11 +452,11 @@ int judgeCond2(Graph& graph) {
         countrow = 0;
         countcol = 0;
         // minrow
-        for (j = graph.mincol + 1; j <= graph.maxcol && countcol == 0; j++) {
+        for (j = graph.mincol + 1; j <= graph.maxcol; j++) {
             countcol += graph.pins[minrow][j];
         }
         // mincol
-        for (i = graph.minrow + 1; i <= graph.maxrow && countrow == 0; i++) {
+        for (i = graph.minrow + 1; i <= graph.maxrow; i++) {
             countrow += graph.pins[i][mincol];
         }
         if (countrow == 1 && countcol == 1) return 0;
@@ -436,11 +467,11 @@ int judgeCond2(Graph& graph) {
         countrow = 0;
         countcol = 0;
         // minrow
-        for (j = graph.mincol; j <= graph.maxcol - 1 && countcol == 0; j++) {
+        for (j = graph.mincol; j <= graph.maxcol - 1; j++) {
             countcol += graph.pins[minrow][j];
         }
         // mincol
-        for (i = graph.minrow + 1; i <= graph.maxrow && countrow == 0; i++) {
+        for (i = graph.minrow + 1; i <= graph.maxrow; i++) {
             countrow += graph.pins[i][maxcol];
         }
         if (countrow == 1 && countcol == 1) return 1;
@@ -451,11 +482,11 @@ int judgeCond2(Graph& graph) {
         countrow = 0;
         countcol = 0;
         // minrow
-        for (j = graph.mincol + 1; j <= graph.maxcol && countcol == 0; j++) {
+        for (j = graph.mincol + 1; j <= graph.maxcol; j++) {
             countcol += graph.pins[maxrow][j];
         }
         // mincol
-        for (i = graph.minrow; i <= graph.maxrow - 1 && countrow == 0; i++) {
+        for (i = graph.minrow; i <= graph.maxrow - 1; i++) {
             countrow += graph.pins[i][mincol];
         }
         if (countrow == 1 && countcol == 1) return 2;
@@ -466,11 +497,11 @@ int judgeCond2(Graph& graph) {
         countrow = 0;
         countcol = 0;
         // minrow
-        for (j = graph.mincol; j <= graph.maxcol - 1 && countcol == 0; j++) {
+        for (j = graph.mincol; j <= graph.maxcol - 1; j++) {
             countcol += graph.pins[maxrow][j];
         }
         // mincol
-        for (i = graph.minrow; i <= graph.maxrow - 1 && countrow == 0; i++) {
+        for (i = graph.minrow; i <= graph.maxrow - 1; i++) {
             countrow += graph.pins[i][maxcol];
         }
         if (countrow == 1 && countcol == 1) return 3;
@@ -480,30 +511,41 @@ int judgeCond2(Graph& graph) {
 }
 
 Graph CompactAndExpandAndPrune(Graph graph, int Case) {
+//    cout << "CAEAP" << endl;
     int i, j;
     Graph graph1, graph2;
 
     switch (Case) {
         case 0: // (min, min)
             graph1 = CompactAndExpand(graph, 0);
-            graph2 = CompactAndExpand(graph, 2);
+            graph2 = CompactAndExpand(graph1, 2);
+//            graph1 = CompactAndExpand(graph, 0);
+//            graph2 = CompactAndExpand(graph, 2);
         case 1: // (min, max)
             graph1 = CompactAndExpand(graph, 0);
-            graph2 = CompactAndExpand(graph, 3);
+            graph2 = CompactAndExpand(graph1, 3);
+//            graph1 = CompactAndExpand(graph, 0);
+//            graph2 = CompactAndExpand(graph, 3);
         case 2: // (max, min)
             graph1 = CompactAndExpand(graph, 1);
-            graph2 = CompactAndExpand(graph, 2);
+            graph2 = CompactAndExpand(graph1, 2);
+//            graph1 = CompactAndExpand(graph, 1);
+//            graph2 = CompactAndExpand(graph, 2);
         case 3: // (max, max)
             graph1 = CompactAndExpand(graph, 1);
-            graph2 = CompactAndExpand(graph, 3);
+            graph2 = CompactAndExpand(graph1, 3);
+//            graph1 = CompactAndExpand(graph, 1);
+//            graph2 = CompactAndExpand(graph, 3);
         default:
             graph1 = CompactAndExpand(graph, 0);
-            graph2 = CompactAndExpand(graph, 2);
+            graph2 = CompactAndExpand(graph1, 2);
+//            graph1 = CompactAndExpand(graph, 0);
+//            graph2 = CompactAndExpand(graph, 2);
             cout << "something went wrong" << endl;
     }
 //    return Prune(graph1, graph2);
 //    return Union(graph1, graph2);
-      return graph1;
+      return graph2;
 }
 
 void print(vector<vector<int>> vec) {
