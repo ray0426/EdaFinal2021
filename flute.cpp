@@ -246,6 +246,7 @@ Graph genLUT(Graph graph) {
     if (debug) print(graph);
     int Case;
     Graph graph1, graph2, graph3, graph4;
+    int minimum;
 
     // single row
     if (graph.minrow == graph.maxrow && graph.mincol != graph.maxcol)
@@ -269,9 +270,23 @@ Graph genLUT(Graph graph) {
     /*
     else if ("7pins-all-on-bs")
         cout << "not implement" << endl;*/
-//    CompactAndExpandAndPrune(graph, 0);
-    return CompactAndExpandAndPrune(graph, 0);  // to be improve
-//    cout << "not implement in genLUT" << endl;
+    graph1 = CompactAndExpand(graph, 0);
+    graph2 = CompactAndExpand(graph, 1);
+    graph3 = CompactAndExpand(graph, 2);
+    graph4 = CompactAndExpand(graph, 3);
+    minimum = min(min(graph1.edges.size(), graph2.edges.size()),
+              min(graph3.edges.size(), graph4.edges.size()));
+    if (minimum == graph1.edges.size())
+        return graph1;
+    if (minimum == graph2.edges.size())
+        return graph2;
+    if (minimum == graph3.edges.size())
+        return graph3;
+    if (minimum == graph4.edges.size())
+        return graph4;
+
+    return CompactAndExpandAndPrune(graph, 0);
+    cout << "not implement in genLUT" << endl;
 }
 
 // suppose each boundary contains at least a pin
@@ -521,33 +536,39 @@ Graph CompactAndExpandAndPrune(Graph graph, int Case) {
     if (debug) cout << "CAEAP  Case: " << Case << endl;
     int i, j;
     Graph graph1, graph2;
+    int minimum;
 
     switch (Case) {
         case 0: // (min, min)
             graph1 = CompactAndExpand(graph, 0);
-            //graph2 = CompactAndExpand(graph1, 2);
+            graph2 = CompactAndExpand(graph, 2);
             break;
         case 1: // (min, max)
             graph1 = CompactAndExpand(graph, 0);
-            //graph2 = CompactAndExpand(graph1, 3);
+            graph2 = CompactAndExpand(graph, 3);
             break;
         case 2: // (max, min)
             graph1 = CompactAndExpand(graph, 1);
-            //graph2 = CompactAndExpand(graph1, 2);
+            graph2 = CompactAndExpand(graph, 2);
             break;
         case 3: // (max, max)
             graph1 = CompactAndExpand(graph, 1);
-            //graph2 = CompactAndExpand(graph1, 3);
+            graph2 = CompactAndExpand(graph, 3);
             break;
         default:
             graph1 = CompactAndExpand(graph, 0);
-            //graph2 = CompactAndExpand(graph1, 2);
+            graph2 = CompactAndExpand(graph, 2);
             cout << "something went wrong in CAEAP " <<
                 "with case: " << Case << endl;
     }
 //    return Prune(graph1, graph2);
 //    return Union(graph1, graph2);
-      return graph1;
+    minimum = min(graph1.edges.size(), graph2.edges.size());
+    if (minimum == graph1.edges.size())
+        return graph1;
+    if (minimum == graph2.edges.size())
+        return graph2;
+    return graph1;
 }
 
 void print(vector<vector<int>>& vec) {
