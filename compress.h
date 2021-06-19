@@ -39,11 +39,19 @@ struct TwoPinRoute2D {
     vector<Route2D> route;
 };
 
-vector<vector<GridSupply>>* GenerateGridSupplyGraph(Problem *pro);
-vector<vector<EdgeSupply>>* Grid2EdgeSupply(vector<vector<GridSupply>> *graph);
-void SupplyChange(vector<vector<GridSupply>> *graph, Net2D oldNet, Net2D newNet = {});
+void PrintEdgeSupply(EdgeSupply a);
+void PrintGridSupply(GridSupply a);
+void PrintPos(Pos a);
+void PrintRoute2D(Route2D a);
+void PrintNet2D(Net2D a);
+void PrintTwoPinNet(TwoPinRoute2D a);
+
+vector<vector<GridSupply>> GenerateGridSupplyGraph(Problem *pro);
+vector<vector<EdgeSupply>> Grid2EdgeSupply(vector<vector<GridSupply>>& graph);
+void SupplyChange(vector<vector<GridSupply>>& graph, Net2D newNet, Net2D oldNet = {});
 
 vector<Net2D> Three2Two(Problem *pro);
-TwoPinRoute2D Multi2TwoPinRoute(Net2D *net, Pos sPin, Pos ePin);
-void SortTaskQueue(vector<TwoPinRoute2D> *twoPinNets, vector<vector<GridSupply>> *graph);
+TwoPinRoute2D Multi2TwoPinRoute(Net2D& net, Pos sPin, Pos ePin);
+void SortTaskQueue(vector<TwoPinRoute2D>& twoPinNets,int chosen, vector<vector<GridSupply>>& graph);
+int RerouteNet(vector<TwoPinRoute2D>& twoPinNets);
 #endif
