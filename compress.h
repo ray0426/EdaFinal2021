@@ -31,6 +31,11 @@ struct Net2D {
     vector<Route2D> route2Ds;
 };
 
+struct TwoPinNets {
+    vector<TwoPinRoute2D> net;
+    vector<vector<int>> usage;
+};
+
 struct TwoPinRoute2D {
     Pos sPin;
     Pos ePin;
