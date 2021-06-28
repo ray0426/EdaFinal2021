@@ -67,9 +67,9 @@ int main(void) {
     for (i = 0, j = 0; (i < V - 1) && (j < E); i++) {
         while (find(Esort[j].p1) == find(Esort[j].p2)) j++;
         unionV(Esort[j].p1, Esort[j].p2);
-        cout << "起點：" << Esort[j].p1
-             << "終點：" << Esort[j].p2
-             << "長度：" << Esort[j].dist << endl;
+        cout << "起點：p" << Esort[j].p1
+             << ", 終點：p" << Esort[j].p2
+             << ", 長度：" << Esort[j].dist << endl;
         j++;
     }
     // cout << manh(pins[1], pins[3]) << endl;
