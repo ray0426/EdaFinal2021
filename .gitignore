@@ -36,3 +36,6 @@
 
 #I don't what type is it
 *.vscode
+
+# evaluator
+*.dmd

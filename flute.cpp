@@ -4,7 +4,7 @@
 using namespace std;
 
 bool debug = false;
-int Totaln = 6;
+int Totaln = 4;
 
 struct Permu {
     int n;
