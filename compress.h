@@ -33,7 +33,7 @@ struct Net2D {
 
 struct TwoPinNets {
     vector<TwoPinRoute2D> net;
-    vector<vector<int>> usage;
+    vector<vector<GridSupply>> usage;
 };
 
 struct TwoPinRoute2D {

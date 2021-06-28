@@ -23,11 +23,12 @@ Route2D mergeLine(Route2D& a, Route2D& b);
 
 TwoPinNets CreateNetSet(Problem* pro);
 void changeTwoPinNet(TwoPinNets &netSet, TwoPinRoute2D &newNet);
-void changeUsage(vector<vector<int>>& usage,TwoPinRoute2D &net, bool add = true);
+void changeUsage(vector<vector<GridSupply>>& usage,TwoPinRoute2D &net, bool add = true);
 
 vector<vector<GridSupply>> GenerateGridSupplyGraph(Problem *pro);
 vector<vector<EdgeSupply>> Grid2EdgeSupply(vector<vector<GridSupply>>& graph);
 void SupplyChange(vector<vector<GridSupply>>& graph, Net2D oldNet, Net2D newNet);
+void afterRouting (vector<vector<GridSupply>>& graph, TwoPinRoute2D& net, TwoPinNets& netSet);
 
 TwoPinRoute2D Multi2TwoPinRoute(Net2D& net, Pos sPin, Pos ePin);
 vector<Route2D> FindRoute(vector<Route2D> &ref, Pos sPin, Pos ePin);
@@ -242,9 +243,16 @@ TwoPinNets CreateNetSet(Problem* pro) {
     TwoPinNets a;
     int rowBound = pro->GGridBD[2];
     int colBound = pro->GGridBD[3];
-    vector<int> vec(colBound, 0);
+    GridSupply g;
+    g.h = 0;
+    g.v = 0;
+    vector<GridSupply> vec;
 
     for (int i = 0; i < rowBound; i++) {
+        vec.clear();
+        for (int j = 0; j < colBound; j++){
+            vec.push_back(g);
+        }
         a.usage.push_back(vec);
     }
 
@@ -261,7 +269,7 @@ void changeTwoPinNet(TwoPinNets &netSet, TwoPinRoute2D &newNet) {
     changeUsage(netSet.usage, newNet);
     netSet.net.push_back(newNet);
 }
-void changeUsage(vector<vector<int>>& usage,TwoPinRoute2D &net, bool add = true) {
+void changeUsage(vector<vector<GridSupply>>& usage,TwoPinRoute2D &net, bool add = true) {
     int col;
     int row;
     Pos start;
@@ -271,15 +279,15 @@ void changeUsage(vector<vector<int>>& usage,TwoPinRoute2D &net, bool add = true)
         for (auto line:net.route){
             start = line.sIdx;
             end = line.eIdx;
-            if (isLineVertical(start,end)) {
+            if (!isLineVertical(start,end)) {
                 row = start.row;
                 for (col = min(start.col, end.col); col <= max(start.col, end.col); col++) {
-                    usage[row][col]++;
+                    usage[row][col].v++;
                 }
             } else {
                 col = start.col;
                 for (row = min(start.row, end.row); row <= max(start.row, end.row); row++) {
-                    usage[row][col]++;
+                    usage[row][col].h++;
                 }
             }
         }
@@ -287,16 +295,16 @@ void changeUsage(vector<vector<int>>& usage,TwoPinRoute2D &net, bool add = true)
         for (auto line:net.route){
             start = line.sIdx;
             end = line.eIdx;
-            if (isLineVertical(start,end)) {
+            if (!isLineVertical(start,end)) {
                 row = start.row;
                 for (col = min(start.col, end.col); col <= max(start.col, end.col); col++)
                 {
-                    usage[row][col]--;
+                    usage[row][col].v--;
                 }
             } else {
                 col = start.col;
                 for (row = min(start.row, end.row); row <= max(start.row, end.row); row++) {
-                    usage[row][col]--;
+                    usage[row][col].h--;
                 }
             }
         }
@@ -426,7 +434,27 @@ void SupplyChange (vector<vector<GridSupply>>& graph, Net2D newNet, Net2D oldNet
     }
     return;
 }
+void afterRouting (vector<vector<GridSupply>>& graph, TwoPinRoute2D& net, TwoPinNets& netSet) {
+    vector<vector<GridSupply>> oldUsage = netSet.usage;
+    changeTwoPinNet(netSet, net);
+    vector<vector<GridSupply>> newUsage = netSet.usage;
 
+    for (int row = 0; row < graph.size(); row++) {
+        for (int col = 0; col < graph[0].size(); col++) {
+            if (oldUsage[row][col].h == 0 && newUsage[row][col].h != 0) {
+                graph[row][col].h++;
+            } else if(oldUsage[row][col].h != 0 && newUsage[row][col].h == 0) {
+                graph[row][col].h--;
+            }
+
+            if (oldUsage[row][col].v == 0 && newUsage[row][col].v != 0) {
+                graph[row][col].v++;
+            } else if(oldUsage[row][col].v != 0 && newUsage[row][col].v == 0) {
+                graph[row][col].v--;
+            }
+        }
+    }
+}
 
 TwoPinRoute2D Multi2TwoPinRoute (Net2D& net, Pos sPin, Pos ePin) {
     TwoPinRoute2D TwoPinNet;    //result
