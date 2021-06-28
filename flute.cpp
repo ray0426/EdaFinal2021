@@ -4,17 +4,12 @@
 using namespace std;
 
 bool debug = false;
-int Totaln = 4;
+int Totaln = 6;
 
 struct Permu {
     int n;
     vector<vector<int>> list;
 };
-
-//struct Pin {
-//    int row;
-//    int col;
-//};
 
 struct Edge { // eq. Route2D in compress.h and Route in problem.h
     int srow, scol;
@@ -46,6 +41,7 @@ struct Graph {
     vector<Edge> edges;
 };
 
+PPtable genLookupTable(int n);
 vector<vector<int>> permutations(int n);
 int idxOfPosSeq(vector<int> posSeq);
 int factorial(int m, int n);
@@ -56,8 +52,7 @@ int judgeCond1(Graph& graph);
 Graph CompactAndExpand(Graph graph, int bd);
 int judgeCond2(Graph& graph);
 Graph CompactAndExpandAndPrune(Graph graph, int Case);
-//type Prune(sometype graph1, sometype graph2); // to be complete
-//int Judge(Graph graph);
+vector<int> genPowv(Graph& graph);
 void print(vector<vector<int>>& vec);
 void print(vector<vector<bool>>& vec);
 void print(Graph& graph);
@@ -65,7 +60,7 @@ void print(Graph& graph);
 ostream& operator<<(ostream& os, Edge& edge);
 ostream& operator<<(ostream& os, vector<int>& vec);
 
-int main (void) {
+/*int main (void) {
     int i, j;
     int k, l;
     int idx;
@@ -74,7 +69,6 @@ int main (void) {
     Permu permu;
     vector<PPtable> pptables;
     PPtable pptable;
-//    vector<Pin> Pins;            // to be decide
     Graph graph;              // to be complete
     Graph graph1;
 
@@ -84,60 +78,66 @@ int main (void) {
         permus.push_back(permu);
     }
 
-    for (i = Totaln - 2; i <= Totaln - 2; i++) {    // for each amount of pins
+    for (i = 0; i <= Totaln - 2; i++) {    // for each amount of pins
         pptable.n = i + 1;
         size = permus[i].list.size();
         pptable.list.resize(size);
         pptable.result.resize(size);
-        cout << "size: " << size << endl;
+//        cout << "size: " << size << endl;
         for (j = 0; j < size; j++) {   // for each permutation
             //cout << "PosSeq: " << permus[i].list[j] << endl;
             idx = idxOfPosSeq(permus[i].list[j]);
             pptable.list[idx] = permus[i].list[j];
-            /*for (k = 0; k < i + 1; k++) {
-                cout << permus[i].list[j][k];
-            }
-            cout << ": " << idxOfPosSeq(permus[i].list[j]) << "     ";
-            */
 
             graph = genGraph(permus[i].list[j]);
             //cout << "genGraph complete" << endl;
             graph1 = genLUT(graph);
-
             cout << "permutation: " << j + 1 << endl;
-            //print(graph1.pins);
-            //cout << "edges: " << endl;
             print(graph1);
-            //cout << endl;
-//            cout << graph.pins[2].col << endl;
-//            pptable.result[idx] = GenLUT(graph);
+            pptable.result[idx].powv = genPowv(graph1);
+            pptable.result[idx].post = graph1.edges;
+            cout << pptable.result[idx].powv << endl;
         }
         pptables.push_back(pptable);
         pptable.list.clear();
     }
-
-/*    cout << "permutation" << endl;
-    for (i = 0; i < 24; i++) {
-        cout << permus[2].list[i][0] << permus[2].list[i][1] <<
-            permus[2].list[i][2] << permus[2].list[i][3] << ": ";
-            cout << idxOfPosSeq(permus[2].list[i]) << endl;
-    }
-    cout << "in index" << endl;
-    for (i = 0; i < 24; i++) {
-        cout << pptables[2].list[i][0] << pptables[2].list[i][1] <<
-            pptables[2].list[i][2] << pptables[2].list[i][3] << endl;
-    }
-*/
-
-//    cout << permus.size() << endl;
-//    cout << permus[0].list.size() << endl;
-//    cout << permus[1].list.size() << endl;
-//    cout << permus[2].list.size() << endl;
-
-//    cout << permus[2].list[2][0] << permus[2].list[2][1] <<
-//        permus[2].list[2][2] << permus[2].list[2][3] << endl;
-
+    cout << "flute complete" << endl;
     return 0;
+}*/
+
+PPtable genLookupTable(int n) {
+    int j;
+    int idx;
+    int size;
+    Permu permu;
+    PPtable pptable;
+    Graph graph;
+    Graph graph1;
+
+    permu.n = n;
+    permu.list = permutations(n);
+
+    pptable.n = n;
+    size = permu.list.size();
+    pptable.list.resize(size);
+    pptable.result.resize(size);
+//        cout << "size: " << size << endl;
+    for (j = 0; j < size; j++) {   // for each permutation
+        //cout << "PosSeq: " << permus[i].list[j] << endl;
+        idx = idxOfPosSeq(permu.list[j]);
+        pptable.list[idx] = permu.list[j];
+
+        graph = genGraph(permu.list[j]);
+        //cout << "genGraph complete" << endl;
+        graph1 = genLUT(graph);
+//        cout << "permutation: " << j + 1 << endl;
+//        print(graph1);
+        pptable.result[idx].powv = genPowv(graph1);
+        pptable.result[idx].post = graph1.edges;
+//        cout << pptable.result[idx].powv << endl;
+    }
+    cout << "flute complete, size: " << n << endl;
+    return pptable;
 }
 
 vector<vector<int>> permutations(int n) {
@@ -569,6 +569,23 @@ Graph CompactAndExpandAndPrune(Graph graph, int Case) {
     if (minimum == graph2.edges.size())
         return graph2;
     return graph1;
+}
+
+vector<int> genPowv(Graph& graph) {
+    int i, j;
+    vector<int> powv;
+
+    powv.resize(graph.maxrow + graph.maxcol - graph.minrow - graph.mincol);
+    fill(powv.begin(), powv.end(), 0);
+    for (i = 0; i < graph.edges.size(); i++) {
+        if (graph.edges[i].srow == graph.edges[i].erow) {
+            powv[graph.edges[i].scol - 1] += 1;
+        }
+        if (graph.edges[i].scol == graph.edges[i].ecol) {
+            powv[graph.maxcol - 1 + graph.edges[i].srow - 1] += 1;
+        }
+    }
+    return powv;
 }
 
 void print(vector<vector<int>>& vec) {
