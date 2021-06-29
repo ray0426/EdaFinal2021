@@ -1,95 +1,171 @@
-#include <iostream>
-#include <vector>
 #include "flute.h"
 #include <algorithm>
+#include <iostream>
+#include <vector>
 using namespace std;
 
 struct Pos {
-    int row;
-    int col;
+  int row;
+  int col;
+};
+
+struct EdgeS {
+  int row;
+  int col;
 };
 
 struct Route2D {
-    Pos sIdx;
-    Pos eIdx;
+  Pos sIdx;
+  Pos eIdx;
 };
 
 struct Net2D {
-    vector<Pos> pin2Ds;
-    string name;
-    float weight;
-    vector<Route2D> route2Ds;
+  vector<Pos> pin2Ds;
+  string name;
+  float weight;
+  vector<Route2D> route2Ds;
 };
 
-void rsmtAware(void);
+vector<vector<EdgeS>> rsmtAware(vector<Pos> pins, int mini, int maxi, int minj,
+                                int maxj);
 int wirelength(vector<int> powv, vector<int> hv);
 bool samePos(Pos pos1, Pos pos2);
 bool sortRow(Pos pos1, Pos pos2);
-void print(vector<Pos>& poss);
+bool sortCol(Pos pos1, Pos pos2);
+void print(vector<Pos> &poss);
 
 int main(void) {
-    int i, j;
-    vector<Pos> pins = {
-        {2, 0},
-        {1, 4},
-        {0, 2},
-        {4, 3},
-        {1, 4},
-        {0, 2}
-    };
-    vector<Pos>::iterator it;
-    vector<int> h;
-    vector<int> v;
+  vector<vector<EdgeS>> edgeSke;
+  vector<Pos> pins = {{2, 0}, {1, 4}, {0, 2}, {4, 3}, {1, 4}, {0, 2}};
+  int mini = 1, maxi = 4, minj = 1, maxj = 4;
 
-    print(pins);
-    sort(pins.begin(), pins.end(), sortRow);
-    it = unique(pins.begin(), pins.end(), samePos);
-    pins.resize(distance(pins.begin(), it));
-    sort(pins.begin(), pins.end(), sortRow);
-    print(pins);
-
-    for (i = 0; i < pins.size(); i++) {
-
-    //rsmtAware();
-    return 0;
+  edgeSke = rsmtAware(pins, mini, maxi, minj, maxj);
+  return 0;
 }
 
-void rsmtAware(void) {
-    PPtable pptable = genLookupTable(6);
-    cout << pptable.result.size() << endl;
+vector<vector<EdgeS>> rsmtAware(vector<Pos> pins, int mini, int maxi, int minj,
+                                int maxj) {
+  int i, j;
+  vector<Pos> pins2;
+  vector<Pos>::iterator it;
+  vector<int> h;
+  vector<int> v;
+  vector<int> posSeq;
+  int idx;
+  PPtable pptable;
+  vector<Edge> post;
+  EdgeS edges = {0, 0};
+  vector<int> hp;
+  vector<int> vp;
+  vector<vector<EdgeS>> edgeSke;
+
+  sort(pins.begin(), pins.end(), sortRow);
+  it = unique(pins.begin(), pins.end(), samePos);
+  pins.resize(distance(pins.begin(), it));
+  sort(pins.begin(), pins.end(), sortRow);
+  print(pins);
+
+  for (i = 1; i < pins.size(); i++) {
+    v.push_back(pins[i].row - pins[i - 1].row);
+  }
+  sort(pins.begin(), pins.end(), sortCol);
+  for (i = 1; i < pins.size(); i++) {
+    h.push_back(pins[i].col - pins[i - 1].col);
+  }
+  //  cout << h << endl;
+  //  cout << v << endl;
+
+  pins2 = pins;
+  for (i = 0; i < pins.size(); i++) {
+    pins2[i].col = i + 1;
+  }
+  sort(pins2.begin(), pins2.end(), sortRow);
+  for (i = 0; i < pins.size(); i++) {
+    posSeq.push_back(pins2[i].col);
+  }
+  idx = idxOfPosSeq(posSeq);
+  cout << idx << endl;
+
+  pptable = genLookupTable(pins2.size());
+  post = pptable.result[idx].post;
+  cout << post.size() << endl;
+  for (i = 0; i < post.size(); i++) {
+    cout << post[i].srow << " " << post[i].scol << " " << post[i].erow << " "
+         << post[i].ecol << endl;
+  }
+
+  sort(pins.begin(), pins.end(), sortRow);
+  for (i = 0; i < pins.size(); i++) {
+    vp.push_back(pins[i].row);
+  }
+  sort(pins.begin(), pins.end(), sortCol);
+  for (i = 0; i < pins.size(); i++) {
+    hp.push_back(pins[i].col);
+  }
+  cout << hp << endl;
+  cout << vp << endl;
+
+  edgeSke.resize(maxi - mini + 1);
+  for (i = 0; i < edgeSke.size(); i++) {
+    edgeSke[i].resize(maxj - minj + 1);
+    for (j = 0; j < edgeSke.size(); j++) {
+      edgeSke[i][j] = edges;
+    }
+  }
+
+  for (i = 0; i < post.size(); i++) {
+    if (post[i].srow == post[i].erow) {
+      edges.row = 1;
+      edges.col = 0;
+      for (j = hp[post[i].scol - 1]; j < hp[post[i].ecol - 1]; j++) {
+        //        cout << "1" << endl;
+        //        cout << "row: " << vp[post[i].srow - 1] << ", col: " << j <<
+        //        endl;
+        edgeSke[vp[post[i].srow - 1]][j] = edges;
+      }
+    } else if (post[i].scol == post[i].ecol) {
+      edges.row = 0;
+      edges.col = 1;
+      for (j = vp[post[i].srow - 1]; j < vp[post[i].erow - 1]; j++) {
+        //        cout << "2" << endl;
+        //        cout << "row: " << j << ", col: " << hp[post[i].scol - 1] <<
+        //        endl;
+        edgeSke[j][hp[post[i].scol - 1]] = edges;
+      }
+    }
+  }
+
+  return edgeSke;
 }
 
 int wirelength(vector<int> powv, vector<int> hv) {
-    int i;
-    int result = 0;
+  int i;
+  int result = 0;
 
-    if (powv.size() != hv.size()) {
-        cout << "wrong size!!" << endl;
-        return -1;
-    }
+  if (powv.size() != hv.size()) {
+    cout << "wrong size!!" << endl;
+    return -1;
+  }
 
-    for (i = 0; i < powv.size(); i++) {
-        result += powv[i] * hv[i];
-    }
-    return result;
+  for (i = 0; i < powv.size(); i++) {
+    result += powv[i] * hv[i];
+  }
+  return result;
 }
-
 
 bool samePos(Pos pos1, Pos pos2) {
-    return (pos1.row == pos2.row) && (pos1.col == pos2.col);
+  return (pos1.row == pos2.row) && (pos1.col == pos2.col);
 }
 
-bool sortRow(Pos pos1, Pos pos2) {
-    return pos1.row <= pos2.row;
-}
+bool sortRow(Pos pos1, Pos pos2) { return pos1.row <= pos2.row; }
+bool sortCol(Pos pos1, Pos pos2) { return pos1.col <= pos2.col; }
 
-void print(vector<Pos>& poss) {
-    int i;
+void print(vector<Pos> &poss) {
+  int i;
 
-    cout << "pins:" << endl;
-    for (i = 0; i < poss.size(); i++) {
-        cout << "(" << poss[i].row << ", " <<
-            poss[i].col << ")" << endl;
-    }
-    cout << endl;
+  cout << "pins:" << endl;
+  for (i = 0; i < poss.size(); i++) {
+    cout << "(" << poss[i].row << ", " << poss[i].col << ")" << endl;
+  }
+  cout << endl;
 }
