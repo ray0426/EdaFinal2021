@@ -2,7 +2,7 @@
 #ifndef PROBLEM_H
 #define PROBLEM_H
 
-#include <vector>
+#include <bits/stdc++.h>
 using std::vector;
 using std::string;
 
@@ -32,7 +32,7 @@ struct MasterCellPin {
 // Blkg
 struct Blkg {
     string name;
-    string layer;
+    int layer;
     float demand;
 };
 
