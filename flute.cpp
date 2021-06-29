@@ -136,7 +136,8 @@ PPtable genLookupTable(int n) {
     pptable.result[idx].post = graph1.edges;
     //        cout << pptable.result[idx].powv << endl;
   }
-  cout << "flute complete, size: " << n << endl;
+  // cout << "flute complete, size: " << n << endl;
+
   return pptable;
 }
 
