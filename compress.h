@@ -31,17 +31,16 @@ struct Net2D {
     vector<Route2D> route2Ds;
 };
 
-struct TwoPinNets {
-    vector<TwoPinRoute2D> net;
-    vector<vector<GridSupply>> usage;
-};
-
 struct TwoPinRoute2D {
     Pos sPin;
     Pos ePin;
     string name;
     float weight;
     vector<Route2D> route;
+};
+struct TwoPinNets {
+    vector<TwoPinRoute2D> net;
+    vector<vector<GridSupply>> usage;
 };
 
 void PrintEdgeSupply(EdgeSupply a);
