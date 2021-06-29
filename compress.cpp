@@ -4,6 +4,7 @@
 #include "problem.h"
 #include "compress.h"
 #include <algorithm>
+#include <math.h>
 using namespace std;
 
 void PrintPos(Pos a);
@@ -42,12 +43,14 @@ int RerouteNet(vector<TwoPinRoute2D>& twoPinNets);
 int bounding(TwoPinRoute2D net);
 
 TwoPinRoute2D BLMR(vector<vector<EdgeSupply>>& graph, TwoPinNets& ref, TwoPinRoute2D& net);
+int findPath(vector<Pos> &list, vector<vector<BLMRgrid>> &map);
+bool isBLCobtained(int &historyLen, BLMRgrid &grid, Pos &start, Pos &end);
+int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<GridSupply>>& usage);
+bool needChange(BLMRgrid stepGrid, int nowCost, int nowLen, bool isBLC);
 TwoPinRoute2D Monotonic();
 
 
-// int main() {
-// 
-// }
+
 
 void PrintPos(Pos a) {
     cout << "(" << a.row << "," << a.col << ") ";
@@ -179,7 +182,7 @@ vector<Net2D> Three2Two (Problem* pro) {
         }
         flatenNets[i].route2Ds = routes;
     }
-    PrintNet2D(flatenNets[0]);
+    // PrintNet2D(flatenNets[0]);
 
     //deal with redundant way of writing route
     for (int k = 0; k < flatenNets.size(); k++) {
@@ -209,7 +212,7 @@ void MergeNet (vector<Route2D>& routes) {
 
     for (int i = 0; i < routes.size(); i++) {
         for (int j = i + 1; j < routes.size(); j++) {
-            cout << i <<" "<< j <<endl;
+            // cout << i <<" "<< j <<endl;
             if (isLineConnect(routes[i],routes[j])) {
                 // PrintRoute2D(routes[i]);
                 // PrintRoute2D(routes[j]);
@@ -284,12 +287,12 @@ void changeUsage(vector<vector<GridSupply>>& usage,TwoPinRoute2D &net, bool add)
             if (!isLineVertical(start,end)) {
                 row = start.row;
                 for (col = min(start.col, end.col); col <= max(start.col, end.col); col++) {
-                    usage[row][col].v++;
+                    usage[row-1][col-1].v++;
                 }
             } else {
                 col = start.col;
                 for (row = min(start.row, end.row); row <= max(start.row, end.row); row++) {
-                    usage[row][col].h++;
+                    usage[row-1][col-1].h++;
                 }
             }
         }
@@ -301,12 +304,16 @@ void changeUsage(vector<vector<GridSupply>>& usage,TwoPinRoute2D &net, bool add)
                 row = start.row;
                 for (col = min(start.col, end.col); col <= max(start.col, end.col); col++)
                 {
-                    usage[row][col].v--;
+                    usage[row-1][col-1].v--;
+                    if (usage[row-1][col-1].v < 0)
+                        cout << "error for usagemap v";
                 }
             } else {
                 col = start.col;
                 for (row = min(start.row, end.row); row <= max(start.row, end.row); row++) {
-                    usage[row][col].h--;
+                    usage[row-1][col-1].h--;
+                    if (usage[row-1][col-1].h < 0)
+                        cout << "error for usagemap h";
                 }
             }
         }
@@ -597,11 +604,7 @@ int score(TwoPinRoute2D twoPinNet, vector<vector<GridSupply>>* graph) {
     }
 }
 int lineLen (Pos start, Pos end) {
-    if (isLineVertical(start,end)) {
-        return abs(start.row - end.row);
-    } else {
-        return abs(start.col - end.col);
-    }
+    return abs(start.row - end.row) + abs(start.col - end.col);
 }
 int RerouteNet (vector<TwoPinRoute2D>& twoPinNets) {
     //return the data location of most needing rerouting net
@@ -621,4 +624,196 @@ int bounding (TwoPinRoute2D net) {
         len += net.weight * lineLen(line.sIdx, line.eIdx);
     }
     return len;
+}
+
+TwoPinRoute2D BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& net, int& ite) {
+    //copy data
+    Pos start = net.sPin;
+    Pos end = net.ePin;
+    int oldLen = 0;
+    for (auto p: net.route) {
+        oldLen += lineLen(p.sIdx, p.eIdx);
+    }
+    //record
+    vector<vector<BLMRgrid>> BLMRmap;
+    BLMRmap[start.row - 1][start.col - 1].further = start;
+    BLMRmap[start.row - 1][start.col - 1].cost = 0;
+    BLMRmap[start.row - 1][start.col - 1].isBLC = true;
+    BLMRmap[start.row - 1][start.col - 1].len = 0;
+    vector<Pos> need;
+    need.push_back(start);
+    vector<Route2D> route;
+
+    //buffer
+    BLMRgrid grid;
+    BLMRgrid stepGrid;
+    Pos mapIdx;
+    int rId;
+    int cId;
+    int needIdx;
+    int lineSupply;
+    Route2D line;
+    Pos lineEnd;
+    bool isBLC;
+    Pos nextPos;
+
+    //clear now routed net && get operated var
+    TwoPinRoute2D newNet = net;
+    newNet.route.clear();
+    afterRouting(graph, newNet, netSet);
+    vector<vector<GridSupply>> usage = netSet.usage;
+    vector<vector<EdgeSupply>> supplyG = Grid2EdgeSupply(graph);
+
+    //find end
+    while (true) { //do until mapIdx == end
+        //find grid with less cost
+        needIdx = findPath(need,BLMRmap);
+        mapIdx = need[needIdx];
+        if (isPosSame(mapIdx,end))
+            break;
+        need.erase(need.begin() + needIdx);
+
+        line.sIdx = mapIdx;
+        grid = BLMRmap[mapIdx.row - 1][mapIdx.col - 1];
+        isBLC = isBLCobtained(oldLen, mapIdx, grid.len, start, end, ite);
+        if (mapIdx.row != 1) { // upper
+            lineEnd.row = mapIdx.row - 1;
+            lineEnd.col = mapIdx.col;
+            line.eIdx = lineEnd;
+
+            lineSupply = costOfEdge(line, supplyG, usage, ite);
+            stepGrid = BLMRmap[lineEnd.row - 1][lineEnd.col - 1];
+            if (needChange(stepGrid, grid.cost + lineSupply, grid.len + 1, isBLC)) {
+                stepGrid.cost = grid.cost + lineSupply;
+                stepGrid.len = grid.len + 1;
+                stepGrid.further = mapIdx;
+                stepGrid.isBLC = isBLC;
+                BLMRmap[lineEnd.row - 1][lineEnd.col - 1] = stepGrid;
+                need.push_back(lineEnd);
+            }
+        }
+        if (mapIdx.row != supplyG.size()) { // lower
+            lineEnd.row = mapIdx.row + 1;
+            lineEnd.col = mapIdx.col;
+            line.eIdx = lineEnd;
+
+            lineSupply = costOfEdge(line, supplyG, usage, ite);
+            stepGrid = BLMRmap[lineEnd.row - 1][lineEnd.col - 1];
+            if (needChange(stepGrid, grid.cost + lineSupply, grid.len + 1, isBLC)) {
+                stepGrid.cost = grid.cost + lineSupply;
+                stepGrid.len = grid.len + 1;
+                stepGrid.further = mapIdx;
+                stepGrid.isBLC = isBLC;
+                BLMRmap[lineEnd.row - 1][lineEnd.col - 1] = stepGrid;
+                need.push_back(lineEnd);
+            }
+        }
+        if (mapIdx.col != 1) { // left
+            lineEnd.row = mapIdx.row;
+            lineEnd.col = mapIdx.col - 1;
+            line.eIdx = lineEnd;
+
+            lineSupply = costOfEdge(line, supplyG, usage, ite);
+            stepGrid = BLMRmap[lineEnd.row - 1][lineEnd.col - 1];
+            if (needChange(stepGrid, grid.cost + lineSupply, grid.len + 1, isBLC)) {
+                stepGrid.cost = grid.cost + lineSupply;
+                stepGrid.len = grid.len + 1;
+                stepGrid.further = mapIdx;
+                stepGrid.isBLC = isBLC;
+                BLMRmap[lineEnd.row - 1][lineEnd.col - 1] = stepGrid;
+                need.push_back(lineEnd);
+            }
+        }
+        if (mapIdx.col != supplyG[0].size()) { // right
+            lineEnd.row = mapIdx.row;
+            lineEnd.col = mapIdx.col + 1;
+            line.eIdx = lineEnd;
+
+            lineSupply = costOfEdge(line, supplyG, usage, ite);
+            stepGrid = BLMRmap[lineEnd.row - 1][lineEnd.col - 1];
+            if (needChange(stepGrid, grid.cost + lineSupply, grid.len + 1, isBLC)) {
+                stepGrid.cost = grid.cost + lineSupply;
+                stepGrid.len = grid.len + 1;
+                stepGrid.further = mapIdx;
+                stepGrid.isBLC = isBLC;
+                BLMRmap[lineEnd.row - 1][lineEnd.col - 1] = stepGrid;
+                need.push_back(lineEnd);
+            }
+        }
+    }
+    //end back to start
+    line.eIdx = end;
+    line.sIdx = BLMRmap[end.row - 1][end.col - 1].further;
+    while (!isPosSame(line.sIdx, start)) {
+        nextPos = BLMRmap[line.sIdx.row - 1][line.sIdx.col - 1].further;
+        if (isPininRoute(nextPos,line.eIdx,line.sIdx)) {
+            line.sIdx = nextPos;
+        } else {
+            route.push_back(line);
+            line.eIdx = line.sIdx;
+            line.sIdx = nextPos;
+        }
+    }
+    route.push_back(line);
+    //refine
+    newNet.route = route;
+    return newNet;
+}
+int findPath (vector<Pos>& list, vector<vector<BLMRgrid>>& map) {
+    int ans;
+    int nowCost = -1;
+    for (int i = 0; i < list.size(); i++) {
+        if (nowCost == -1 || nowCost > map[list[ans].col - 1][list[ans].row - 1].cost) {
+            ans = i;
+        }
+    }
+    return ans;
+}
+bool isBLCobtained(int &historyLen, Pos &grid, int &gridLen,Pos &start, Pos &end, int& ite) {
+    //+1
+    int a = 9;
+    float b = 1.5;
+    float BLC = float(lineLen(start, end)) * (1 - atan(ite - a) + b);
+    float ew = float(historyLen) * float(lineLen(grid, end)) / float(lineLen(start, end));
+    return (BLC > ew + float(gridLen));
+}
+//consider skeleton edge
+int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<GridSupply>>& usage, int& ite){
+    float eCost;
+    float kappa = 100;
+    float eSupply = 0.0;
+    float C3 = 150.0;
+    float C4 = 0.3;
+    // float C5 = 30;
+    float C6 = 200.0;
+    if (isLineVertical(line.sIdx,line.eIdx)) {
+        eSupply = float(graph[max(line.sIdx.row, line.eIdx.row) - 1][line.sIdx.col - 1].col);
+        if (eSupply > 0 && usage[line.sIdx.row - 1][line.sIdx.col - 1].v > 0 && usage[line.eIdx.row - 1][line.eIdx.col - 1].v > 0) {
+            return 0;
+        }
+    } else {
+        eSupply = float(graph[line.sIdx.row - 1][max(line.sIdx.col, line.eIdx.col) - 1].row);
+        if (eSupply > 0 && usage[line.sIdx.row - 1][line.sIdx.col - 1].h > 0 && usage[line.eIdx.row - 1][line.eIdx.col - 1].h > 0) {
+            return 0;
+        }
+    }
+
+    eCost = (1 + C3 / exp(C4 * float(eSupply)) + C6 / (pow(2.0, float(ite))));
+    if (eSupply <= 0) {
+        return int(kappa * kappa * eCost);
+    } else {
+        return int(kappa * eCost);
+    }
+}
+bool needChange(BLMRgrid stepGrid, int nowCost, int nowLen, bool isBLC) {
+    if (isBLC) {
+        if (stepGrid.cost == -1 || !stepGrid.isBLC || stepGrid.cost > nowCost) {
+            return true;
+        }
+    } else {
+        if (!stepGrid.isBLC && stepGrid.len > nowLen) {
+            return true;
+        }
+    }
+    return false;
 }
