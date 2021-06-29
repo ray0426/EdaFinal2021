@@ -6,6 +6,8 @@
 #include "compress.h"
 using namespace std;
 
+void testH(Problem *pro);
+
 int main (int argc, char** argv) {
     if (!argv[1]) {
         cout << "Please input case file"<< endl;
@@ -14,6 +16,13 @@ int main (int argc, char** argv) {
     Problem* pro = new Problem;
     pro->readCase(argv[1]);
 
+    testH(pro);
+
+    delete pro;
+    return 0;
+}
+
+void testH (Problem* pro) {
     vector<Net2D> flattenNet = Three2Two(pro);
     vector<vector<GridSupply>> gSupGraph = GenerateGridSupplyGraph(pro);
     vector<vector<EdgeSupply>> eSupGraph = Grid2EdgeSupply(gSupGraph);
@@ -66,10 +75,5 @@ int main (int argc, char** argv) {
     //for (auto n: Nets) {
     //    PrintTwoPinNet(n);
     //}
-
-    delete pro;
-    return 0;
 }
-
-
 

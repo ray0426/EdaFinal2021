@@ -24,11 +24,17 @@ struct Route2D {
     Pos sIdx;
     Pos eIdx;
 };
+struct Pin {
+    Pos locate;
+    int lay;
+};
 struct Net2D {
     vector<Pos> pin2Ds;
+    vector<Pin> pinWithLay;
     string name;
     float weight;
     vector<Route2D> route2Ds;
+    int minRouteLay;
 };
 
 struct TwoPinRoute2D {
@@ -41,6 +47,13 @@ struct TwoPinRoute2D {
 struct TwoPinNets {
     vector<TwoPinRoute2D> net;
     vector<vector<GridSupply>> usage;
+};
+
+struct BLMRgrid {
+    Pos further;
+    int len;
+    int cost = -1;
+    bool isBLC;
 };
 
 void PrintEdgeSupply(EdgeSupply a);
