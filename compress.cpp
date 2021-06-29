@@ -20,6 +20,7 @@ bool isLineConnect(Route2D& a, Route2D& b);
 
 vector<Net2D> Three2Two (Problem* pro);
 Route2D mergeLine(Route2D& a, Route2D& b);
+void MergeNet (vector<Route2D>& routes);
 
 TwoPinNets CreateNetSet(Problem* pro);
 void changeTwoPinNet(TwoPinNets &netSet, TwoPinRoute2D &newNet);
@@ -178,7 +179,7 @@ vector<Net2D> Three2Two (Problem* pro) {
         }
         flatenNets[i].route2Ds = routes;
     }
-    // PrintNet2D(flatenNets[0]);
+    PrintNet2D(flatenNets[0]);
 
     //deal with redundant way of writing route
     for (int k = 0; k < flatenNets.size(); k++) {
@@ -208,14 +209,14 @@ void MergeNet (vector<Route2D>& routes) {
 
     for (int i = 0; i < routes.size(); i++) {
         for (int j = i + 1; j < routes.size(); j++) {
-            // cout << i << j <<endl;
+            cout << i <<" "<< j <<endl;
             if (isLineConnect(routes[i],routes[j])) {
                 // PrintRoute2D(routes[i]);
                 // PrintRoute2D(routes[j]);
                 isMerged = false;
                 for (auto p: merged) {
                     if (p == i || p == j) {
-                        isMerged == true;
+                        isMerged = true;
                     }
                 }
                 if (isMerged)
@@ -237,6 +238,7 @@ void MergeNet (vector<Route2D>& routes) {
     for (auto p: merged) {
         routes.erase(routes.begin() + p);
     }
+    return;
 }
 
 TwoPinNets CreateNetSet(Problem* pro) {
@@ -269,7 +271,7 @@ void changeTwoPinNet(TwoPinNets &netSet, TwoPinRoute2D &newNet) {
     changeUsage(netSet.usage, newNet);
     netSet.net.push_back(newNet);
 }
-void changeUsage(vector<vector<GridSupply>>& usage,TwoPinRoute2D &net, bool add = true) {
+void changeUsage(vector<vector<GridSupply>>& usage,TwoPinRoute2D &net, bool add) {
     int col;
     int row;
     Pos start;
