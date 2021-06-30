@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include "problem.h"
+#include "rsmtAware.h"
 using namespace std;
 
 struct EdgeSupply {
@@ -78,5 +79,5 @@ void afterRouting (vector<vector<GridSupply>>& graph, TwoPinRoute2D& net, TwoPin
 
 void SortTaskQueue(vector<TwoPinRoute2D>& twoPinNets,int chosen, vector<vector<GridSupply>>& graph);
 int RerouteNet(vector<TwoPinRoute2D>& twoPinNets);
-void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& net, int& ite);
+void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& net, int& ite, vector<vector<EdgeS>>& skeleton);
 #endif
