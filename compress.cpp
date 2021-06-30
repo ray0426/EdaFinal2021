@@ -24,7 +24,7 @@ vector<Net2D> Three2Two (Problem* pro);
 Route2D mergeLine(Route2D& a, Route2D& b);
 void MergeNet (vector<Route2D>& routes);
 
-TwoPinNets CreateNetSet(Problem* pro);
+TwoPinNets CreateNetSet(Problem* pro, string& name);
 void changeTwoPinNet(TwoPinNets &netSet, TwoPinRoute2D &newNet);
 void changeUsage(vector<vector<GridSupply>>& usage,TwoPinRoute2D &net, bool add = true);
 
@@ -278,10 +278,11 @@ void MergeNet (vector<Route2D>& routes) {
     return;
 }
 
-TwoPinNets CreateNetSet(Problem* pro) {
+TwoPinNets CreateNetSet(Problem* pro, string& name) {
     TwoPinNets a;
     int rowBound = pro->GGridBD[2];
     int colBound = pro->GGridBD[3];
+    a.name = name;
     GridSupply g;
     g.h = 0;
     g.v = 0;
@@ -485,15 +486,15 @@ void afterRouting (vector<vector<GridSupply>>& graph, TwoPinRoute2D& net, TwoPin
     for (int row = 0; row < graph.size(); row++) {
         for (int col = 0; col < graph[0].size(); col++) {
             if (oldUsage[row][col].h == 0 && newUsage[row][col].h != 0) {
-                graph[row][col].h++;
-            } else if(oldUsage[row][col].h != 0 && newUsage[row][col].h == 0) {
                 graph[row][col].h--;
+            } else if(oldUsage[row][col].h != 0 && newUsage[row][col].h == 0) {
+                graph[row][col].h++;
             }
 
             if (oldUsage[row][col].v == 0 && newUsage[row][col].v != 0) {
-                graph[row][col].v++;
-            } else if(oldUsage[row][col].v != 0 && newUsage[row][col].v == 0) {
                 graph[row][col].v--;
+            } else if(oldUsage[row][col].v != 0 && newUsage[row][col].v == 0) {
+                graph[row][col].v++;
             }
         }
     }
