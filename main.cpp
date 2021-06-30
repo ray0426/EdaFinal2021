@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
   Problem *pro = new Problem;
   pro->readCase(argv[1]);
 
-  testH(pro);
+  // testH(pro);
 
   vector<Net2D> flattenNet = Three2Two(pro);
   vector<vector<GridSupply>> gSupGraph = GenerateGridSupplyGraph(pro);
