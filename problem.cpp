@@ -15,7 +15,6 @@ Problem::~Problem(void) {
 }
 
 void Problem::readCase(char* inputfile) {
-    char c; // for useless char
     string str; // for useless string
     ifstream file(inputfile); // read input file
     int i, j; // array index
@@ -64,7 +63,8 @@ void Problem::readCase(char* inputfile) {
             mc.pins.push_back(mcp);
         }
         for (j = 0; j < mc.blockageCount; j++) {
-            file >> str >> blkg.name >> c >> blkg.layer >> blkg.demand;
+            file >> str >> blkg.name >> blkg.layer >> blkg.demand;
+            cout << blkg.layer.substr(1) << endl;
             blkg.layer_id = stoi(blkg.layer.substr(1), nullptr, 10);
             mc.blkgs.push_back(blkg);
         }
