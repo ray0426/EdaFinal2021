@@ -24,7 +24,7 @@ vector<Net2D> Three2Two (Problem* pro);
 Route2D mergeLine(Route2D& a, Route2D& b);
 void MergeNet (vector<Route2D>& routes);
 
-TwoPinNets CreateNetSet(Problem* pro);
+TwoPinNets CreateNetSet(Problem* pro,string& name);
 void changeTwoPinNet(TwoPinNets &netSet, TwoPinRoute2D &newNet);
 void changeUsage(vector<vector<GridSupply>>& usage,TwoPinRoute2D &net, bool add = true);
 
@@ -278,8 +278,9 @@ void MergeNet (vector<Route2D>& routes) {
     return;
 }
 
-TwoPinNets CreateNetSet(Problem* pro) {
+TwoPinNets CreateNetSet(Problem* pro, string& name) {
     TwoPinNets a;
+    a.name = name;
     int rowBound = pro->GGridBD[2];
     int colBound = pro->GGridBD[3];
     GridSupply g;

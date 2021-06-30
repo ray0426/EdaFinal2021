@@ -64,8 +64,9 @@ void testH (Problem* pro) {
     TwoPinRoute2D Net2 = Multi2TwoPinRoute(flattenNet[1], flattenNet[1].pin2Ds[0], flattenNet[1].pin2Ds[3]);
     TwoPinRoute2D Net3 = Multi2TwoPinRoute(flattenNet[1], flattenNet[1].pin2Ds[0], flattenNet[1].pin2Ds[1]);
     vector<TwoPinRoute2D> Nets{Net1, Net2, Net3};
-
-    TwoPinNets N2 = CreateNetSet(pro);
+    
+    string name = "N2";
+    TwoPinNets N2 = CreateNetSet(pro,name);
     
     for (auto n: Nets) {
         // PrintTwoPinNet(n);

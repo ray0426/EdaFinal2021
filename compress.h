@@ -45,6 +45,7 @@ struct TwoPinRoute2D {
     vector<Route2D> route;
 };
 struct TwoPinNets {
+    string name;
     vector<TwoPinRoute2D> net;
     vector<vector<GridSupply>> usage;
 };
@@ -68,7 +69,7 @@ vector<Net2D> Three2Two(Problem *pro);
 void MergeNet (vector<Route2D>& routes);    //all twoPinNet Route put into it
 TwoPinRoute2D Multi2TwoPinRoute(Net2D& net, Pos sPin, Pos ePin);
 
-TwoPinNets CreateNetSet(Problem* pro);
+TwoPinNets CreateNetSet(Problem* pro,string& name);
 
 vector<vector<GridSupply>> GenerateGridSupplyGraph(Problem *pro);
 vector<vector<EdgeSupply>> Grid2EdgeSupply(vector<vector<GridSupply>>& graph);
