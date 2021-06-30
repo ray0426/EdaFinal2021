@@ -49,6 +49,7 @@ struct edge
 
     char _dir(){ return (fir->row == sec->row)?'H':'V'; }
     la_Edge operator=(la_Edge a){ fir = a.fir; sec = a.sec; return a; }
+    void print(){ printf("(%d,%d)->(%d,%d)", fir->row, fir->col, sec->row, sec->col); return; }
 };
 
 struct net2d
@@ -58,7 +59,7 @@ struct net2d
     vector<la_Edge*> edge; 
     double weight;
     int minRouteLayConst;
-    
+
     double _score()
     {
         int total_length = edge.size(), pinnum = 0;
@@ -88,24 +89,30 @@ int _find_id_in_vector(vector<Pos> v, Pos t)
 
 vector<la_Net2d*> _transform(vector<Net2D> net)
 {
+    cout << "start transforming:" << endl;
     vector<la_Net2d*> la_net;
     for(auto a : net)
     {
+        cout << a.name << endl;
         la_Net2d* la_net2d = new la_Net2d;
+        a.name.erase(0,1);
+        la_net2d->id = stoi(a.name, nullptr, 10);
         la_net2d->minRouteLayConst = a.minRouteLayConst;
         la_net2d->weight = a.weight;
+        bool first = true;
         for(auto r : a.route2Ds)
         {
             int layer;
             la_Vertex2d *v = new la_Vertex2d;
             la_Vertex2d *v_pre = new la_Vertex2d;
             la_Edge *e = new la_Edge;
-            if(find(a.route2Ds.begin(), a.route2Ds.end(), r) == a.route2Ds.begin())
+            if(first)
             {
                 layer = _find_id_in_vector(a.pin2Ds, r.sIdx);
                 if(layer == -1) v->init(r.sIdx.row, r.sIdx.col, -1, false); 
                 else v->init(r.sIdx.row, r.sIdx.col, a.pinwithLay.at(layer).lay, true); 
                 la_net2d->vertex.push_back(v);
+                first = false;
             }
             if(r.sIdx.row == r.eIdx.row)
             {
@@ -120,6 +127,7 @@ vector<la_Net2d*> _transform(vector<Net2D> net)
                     la_net2d->vertex.push_back(v);
                     e->fir = v_pre; e->sec = v;
                     la_net2d->edge.push_back(e);
+                    e->print();
                     v_pre = v;
                 }
             }
@@ -136,6 +144,7 @@ vector<la_Net2d*> _transform(vector<Net2D> net)
                     la_net2d->vertex.push_back(v);
                     e->fir = v_pre; e->sec = v;
                     la_net2d->edge.push_back(e);
+                    e->print();
                     v_pre = v;
                 }
             }
@@ -249,7 +258,7 @@ void _route_print(la_Route *r, Problem p)
 
 void _layer_assignment_and_print_route(Problem p, vector<Net2D> net)
 {
-    vector<la_Net2d*> net2d = new la_Net2d;
+    vector<la_Net2d*> net2d;
     net2d = _transform(net);
     _net_ordering(net2d);
 
@@ -286,13 +295,13 @@ void _layer_assignment_and_print_route(Problem p, vector<Net2D> net)
         {
             for(int i = 0; i < numrow; i++)
             {
-                for(int j = 0; j < numcol; j++) supply[i][j][a.blkgs.at(k).layer-1] -= a.blkgs.at(k).demand;
+                for(int j = 0; j < numcol; j++) supply[i][j][a.blkgs.at(k).layer_id-1] -= a.blkgs.at(k).demand;
             }
         }
     } 
 
     // direction of layer
-    char *dir = new dir[p.NumLayer];
+    char *dir = new char[p.NumLayer];
     for(int i = 0; i < p.NumLayer; i++) dir[i] = p.layers.at(i).direction;
 
     //assignment
@@ -338,7 +347,11 @@ void _layer_assignment_and_print_route(Problem p, vector<Net2D> net)
 
 //#endif
 
-int main(void)
+int main(int argc, char **argv)
 {
-
+    Problem *pro = new Problem;
+    pro->readCase(argv[1]);
+    vector<Net2D> net =  Three2Two(pro);
+    vector<la_Net2d*> net2d = _transform(net);
+    return 0;
 }

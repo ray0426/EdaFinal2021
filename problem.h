@@ -27,6 +27,7 @@ struct NonDefaultSupply {
 struct MasterCellPin {
     string name;
     string layer;
+    int layer_id;
 };
 
 // Blkg
