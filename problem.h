@@ -2,7 +2,7 @@
 #ifndef PROBLEM_H
 #define PROBLEM_H
 
-#include <vector>
+#include <bits/stdc++.h>
 using std::vector;
 using std::string;
 
@@ -27,12 +27,14 @@ struct NonDefaultSupply {
 struct MasterCellPin {
     string name;
     string layer;
+    int layer_id;
 };
 
 // Blkg
 struct Blkg {
     string name;
     string layer;
+    int layer_id;
     float demand;
 };
 
