@@ -869,13 +869,13 @@ int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<G
     float C6 = 200.0;
     if (isLineVertical(line.sIdx,line.eIdx)) {
         eSupply = float(graph[max(line.sIdx.row, line.eIdx.row) - 1][line.sIdx.col - 1].row);
-        isSkeleton = float(skeleton[min(line.eIdx.row,line.sIdx.row) - 1][line.sIdx.col - 1].row);
+        isSkeleton = float(skeleton[min(line.eIdx.row,line.sIdx.row) - 1][line.sIdx.col - 1].col);
         if (eSupply > 0 && usage[line.sIdx.row - 1][line.sIdx.col - 1].v > 0 && usage[line.eIdx.row - 1][line.eIdx.col - 1].v > 0) {
             return 0;
         }
     } else {
         eSupply = float(graph[line.sIdx.row - 1][max(line.sIdx.col, line.eIdx.col) - 1].col);
-        isSkeleton = float(skeleton[line.sIdx.row - 1][min(line.sIdx.col, line.eIdx.col) - 1].col);
+        isSkeleton = float(skeleton[line.sIdx.row - 1][min(line.sIdx.col, line.eIdx.col) - 1].row);
         if (eSupply > 0 && usage[line.sIdx.row - 1][line.sIdx.col - 1].h > 0 && usage[line.eIdx.row - 1][line.eIdx.col - 1].h > 0) {
             return 0;
         }
