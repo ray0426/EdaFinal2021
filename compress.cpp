@@ -662,9 +662,9 @@ int bounding (TwoPinRoute2D net) {
     return len;
 }
 
-void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& net, int& ite, vector<vector<EdgeS>>& skeleton) {
+void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& net, int& ite) {
     //copy data
-    
+    vector<vector<EdgeS>> skeleton = netSet.skeleton;
     Pos start = net.sPin;
     Pos end = net.ePin;
     int oldLen = 0;

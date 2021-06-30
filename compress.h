@@ -49,6 +49,7 @@ struct TwoPinNets {
     string name;
     vector<TwoPinRoute2D> net;
     vector<vector<GridSupply>> usage;
+    vector<vector<EdgeS>> skeleton;
 };
 
 struct BLMRgrid {
@@ -65,6 +66,7 @@ void PrintRoute2D(Route2D a);
 void PrintNet2D(Net2D a);
 void PrintTwoPinNet(TwoPinRoute2D a);
 
+bool isPosSame (Pos& a, Pos& b);
 vector<Net2D> Three2Two(Problem *pro);
 
 void MergeNet (vector<Route2D>& routes);    //all twoPinNet Route put into it
@@ -79,5 +81,5 @@ void afterRouting (vector<vector<GridSupply>>& graph, TwoPinRoute2D& net, TwoPin
 
 void SortTaskQueue(vector<TwoPinRoute2D>& twoPinNets,int chosen, vector<vector<GridSupply>>& graph);
 int RerouteNet(vector<TwoPinRoute2D>& twoPinNets);
-void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& net, int& ite, vector<vector<EdgeS>>& skeleton);
+void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& net, int& ite);
 #endif

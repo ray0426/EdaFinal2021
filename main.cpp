@@ -9,35 +9,67 @@ using namespace std;
 
 void testH(Problem *pro);
 
-int main(int argc, char **argv) {
-  vector<vector<EdgeS>> edgeSkeleton;
-  if (!argv[1]) {
-    cout << "Please input case file" << endl;
-    return -1;
-  }
-  Problem *pro = new Problem;
-  pro->readCase(argv[1]);
+int main(int argc, char **argv)
+{
+    vector<vector<EdgeS>> edgeSkeleton;
+    if (!argv[1])
+    {
+        cout << "Please input case file" << endl;
+        return -1;
+    }
+    Problem *pro = new Problem;
+    pro->readCase(argv[1]);
 
-  // testH(pro);
+    // testH(pro);
 
-  vector<Net2D> flattenNet = Three2Two(pro);
-  vector<vector<GridSupply>> gSupGraph = GenerateGridSupplyGraph(pro);
-  vector<vector<EdgeSupply>> eSupGraph = Grid2EdgeSupply(gSupGraph);
+    vector<Net2D> flattenNet = Three2Two(pro);
+    vector<vector<GridSupply>> gSupGraph = GenerateGridSupplyGraph(pro);
+    vector<vector<EdgeSupply>> eSupGraph = Grid2EdgeSupply(gSupGraph);
 
-  cout << "multiPinNets" << endl;
-  //  for (auto net : flattenNet) {
-  //    PrintNet2D(net);
-  //  }
 
-  // print(flattenNet[1].pin2Ds);
-  edgeSkeleton = rsmtAware(flattenNet[1].pin2Ds, pro->GGridBD[0],
-                           pro->GGridBD[2], pro->GGridBD[1], pro->GGridBD[3]);
+    // print(flattenNet[1].pin2Ds);
+    // edgeSkeleton = rsmtAware(flattenNet[1].pin2Ds, pro->GGridBD[0],
+    //                          pro->GGridBD[2], pro->GGridBD[1], pro->GGridBD[3]);
+    vector<TwoPinNets> netSets;
+    TwoPinNets netSet;
+    vector<TwoPinRoute2D> queue;
+    for (auto net : flattenNet) {
+        netSet = CreateNetSet(pro,net.name);
+        netSet.skeleton = rsmtAware(net.pin2Ds, pro->GGridBD[0],
+                                    pro->GGridBD[2], pro->GGridBD[1], pro->GGridBD[3]);
+        //make two Pins, gen route, put into queue
+        netSets.push_back(netSet);
+    }
 
-  delete pro;
-  return 0;
+    int ite = 1;
+    int reRouteIdx;
+    while (ite < 10) {
+        reRouteIdx = RerouteNet(queue);
+        // monotonic
+        SortTaskQueue(queue, reRouteIdx, gSupGraph);
+        queue.pop_back();   //if monotonic is do, don't do this
+        for (int j = 0; j < queue.size(); j++) {
+            for (int k = 0; k < netSets.size(); k++) {
+                if (netSets[k].name == queue[j].name) {
+                    BLMR(gSupGraph, netSets[k], queue[j], ite);
+                    for (auto n: netSets[k].net) {
+                        if (isPosSame(n.ePin,queue[j].ePin)&&isPosSame(n.sPin,queue[j].sPin)) {
+                            queue[j] = n;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        ite++;
+    }
+
+    delete pro;
+    return 0;
 }
 
-void testH (Problem* pro) {
+void testH(Problem *pro)
+{
     vector<Net2D> flattenNet = Three2Two(pro);
     vector<vector<GridSupply>> gSupGraph = GenerateGridSupplyGraph(pro);
     vector<vector<EdgeSupply>> eSupGraph = Grid2EdgeSupply(gSupGraph);
@@ -48,8 +80,10 @@ void testH (Problem* pro) {
     //}
 
     cout << "gridSupply(v,h)" << endl;
-    for (auto r: gSupGraph) {
-        for (auto g: r) {
+    for (auto r : gSupGraph)
+    {
+        for (auto g : r)
+        {
             PrintGridSupply(g);
         }
         cout << endl;
@@ -63,7 +97,7 @@ void testH (Problem* pro) {
     //    }
     //    cout << endl;
     //}
-//
+    //
     //cout << "edgeSupply(v,h)" << endl;
     //for (auto r: eSupGraph) {
     //    for (auto e: r) {
@@ -79,18 +113,21 @@ void testH (Problem* pro) {
     TwoPinRoute2D Net2 = Multi2TwoPinRoute(flattenNet[1], flattenNet[1].pin2Ds[0], flattenNet[1].pin2Ds[3]);
     TwoPinRoute2D Net3 = Multi2TwoPinRoute(flattenNet[1], flattenNet[1].pin2Ds[0], flattenNet[1].pin2Ds[1]);
     vector<TwoPinRoute2D> Nets{Net1, Net2, Net3};
-    
+
     string name = "N2";
-    TwoPinNets N2 = CreateNetSet(pro,name);
-    
-    for (auto n: Nets) {
+    TwoPinNets N2 = CreateNetSet(pro, name);
+
+    for (auto n : Nets)
+    {
         // PrintTwoPinNet(n);
         afterRouting(gSupGraph, n, N2);
     }
 
     cout << "gridSupply(v,h)" << endl;
-    for (auto r: gSupGraph) {
-        for (auto g: r) {
+    for (auto r : gSupGraph)
+    {
+        for (auto g : r)
+        {
             PrintGridSupply(g);
         }
         cout << endl;
@@ -113,7 +150,7 @@ void testH (Problem* pro) {
 
     //int i = RerouteNet(Nets);
     //PrintTwoPinNet(Nets[i]);
-// //
+    // //
     //SortTaskQueue(Nets,i,gSupGraph);
     //for (auto n: Nets) {
     //    PrintTwoPinNet(n);
