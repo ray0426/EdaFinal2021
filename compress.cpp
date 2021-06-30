@@ -131,8 +131,10 @@ vector<Net2D> Three2Two (Problem* pro) {
     Net CurrentNet;
     Route CurrentRoute;         //now using
 
-    Pos pin;                    
+    Pos pin;
+    Pin pinWithLay;
     vector<Pos> pins;
+    vector<Pin> pinsWithLay;
     vector<Route2D> routes;
     Route2D flatenRoute;
     Net2D flatenNet;            //buffer
@@ -148,6 +150,13 @@ vector<Net2D> Three2Two (Problem* pro) {
         //seting name and weight
         flatenNet.name = CurrentNet.name;
         flatenNet.weight = CurrentNet.weight;
+        
+        for (auto lay: pro->layers) {
+            if (CurrentNet.minRouteLayConst == lay.name) {
+                flatenNet.minRouteLay = lay.Idx;
+                break;
+            }
+        }
 
         pins.clear();
         //finding flatenNet.pin2Ds
@@ -158,12 +167,33 @@ vector<Net2D> Three2Two (Problem* pro) {
                 if (instName == currentCellinst.name) {
                     pin.col = currentCellinst.colIdx;
                     pin.row = currentCellinst.rowIdx;
+                    pinWithLay.locate = pin;
+                    
+                    for (auto currentMC : pro->masterCells) {
+                        if (currentCellinst.MasterCellName == currentMC.name) {
+                            for (auto p: currentMC.pins) {
+                                if (CurrentNet.pins[j].masterPinName == p.name) {
+                                    for (auto lay: pro->layers) {
+                                        if (p.layer == lay.name) {
+                                            pinWithLay.lay = lay.Idx;
+                                            break;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+
                     pins.push_back(pin);
+                    pinsWithLay.push_back(pinWithLay);
                     break;
                 }
             }
         }
         flatenNet.pin2Ds = pins;
+        flatenNet.pinWithLay = pinsWithLay;
         flatenNets.push_back(flatenNet);
     }
 
@@ -334,11 +364,11 @@ vector<vector<GridSupply>> GenerateGridSupplyGraph (Problem* pro) {
     Layer layer;
 
     //counting defaultsupply
-    for (Layer layer: pro->layers) {
-        if (layer.direction == 'H')
-            hSupply += layer.defaultsupply;
-        else if (layer.direction == 'V')
-            vSupply += layer.defaultsupply;
+    for (Layer lay: pro->layers) {
+        if (lay.direction == 'H')
+            hSupply += lay.defaultsupply;
+        else if (lay.direction == 'V')
+            vSupply += lay.defaultsupply;
     }
     //assert defaultsupply to grids
     for (int i = 0; i < rowBound; i++) {
@@ -361,13 +391,13 @@ vector<vector<GridSupply>> GenerateGridSupplyGraph (Problem* pro) {
         else if (layer.direction == 'V') graph.at(rId-1)[cId-1].v += delta;
     }
 
-    //blockage also have demand
+    //blockage also have demand     // here to change
     for (auto cell: pro->cellinsts) {
         for (auto mc: pro->masterCells) {
             if (cell.MasterCellName == mc.name) {
                 for (auto blkg: mc.blkgs) {
                     for (auto lay: pro->layers) {
-                        if (lay.name == blkg.layer) {
+                        if (lay.name == blkg.layer) {   
                             if (lay.direction == 'H') {
                                 graph[cell.rowIdx-1][cell.colIdx-1].h -= blkg.demand;
                             } else {
