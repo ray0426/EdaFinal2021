@@ -64,7 +64,6 @@ void Problem::readCase(char* inputfile) {
         }
         for (j = 0; j < mc.blockageCount; j++) {
             file >> str >> blkg.name >> blkg.layer >> blkg.demand;
-            cout << blkg.layer.substr(1) << endl;
             blkg.layer_id = stoi(blkg.layer.substr(1), nullptr, 10);
             mc.blkgs.push_back(blkg);
         }
