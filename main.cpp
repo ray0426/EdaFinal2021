@@ -27,10 +27,10 @@ void testH (Problem* pro) {
     vector<vector<GridSupply>> gSupGraph = GenerateGridSupplyGraph(pro);
     vector<vector<EdgeSupply>> eSupGraph = Grid2EdgeSupply(gSupGraph);
 
-    cout << "multiPinNets" << endl;
-    for(auto net: flattenNet){
-        PrintNet2D(net);
-    }
+    //cout << "multiPinNets" << endl;
+    //for(auto net: flattenNet){
+    //    PrintNet2D(net);
+    //}
 
     //cout << "gridSupply(v,h)" << endl;
     //for (auto r: gSupGraph) {
@@ -39,6 +39,7 @@ void testH (Problem* pro) {
     //    }
     //    cout << endl;
     //}
+
     //SupplyChange(gSupGraph,flattenNet[0]);
     //cout << "supplychange" << endl;
     //for (auto r: gSupGraph) {
@@ -55,19 +56,36 @@ void testH (Problem* pro) {
     //    }
     //    cout << endl;
     //}
-//
+
     //TwoPinRoute2D TwoPinNet = Multi2TwoPinRoute(flattenNet[0], flattenNet[0].pin2Ds[0], flattenNet[0].pin2Ds[2]);
     //PrintTwoPinNet(TwoPinNet);
-//
-    //TwoPinRoute2D Net1 = Multi2TwoPinRoute(flattenNet[1], flattenNet[1].pin2Ds[1], flattenNet[1].pin2Ds[2]);
-    //TwoPinRoute2D Net2 = Multi2TwoPinRoute(flattenNet[1], flattenNet[1].pin2Ds[0], flattenNet[1].pin2Ds[3]);
-    //TwoPinRoute2D Net3 = Multi2TwoPinRoute(flattenNet[1], flattenNet[1].pin2Ds[0], flattenNet[1].pin2Ds[1]);
-    //vector<TwoPinRoute2D> Nets{Net1, Net2, Net3};
-//
-    //for (auto n: Nets) {
-    //    PrintTwoPinNet(n);
-    //}
-    //
+
+    TwoPinRoute2D Net1 = Multi2TwoPinRoute(flattenNet[1], flattenNet[1].pin2Ds[1], flattenNet[1].pin2Ds[2]);
+    TwoPinRoute2D Net2 = Multi2TwoPinRoute(flattenNet[1], flattenNet[1].pin2Ds[0], flattenNet[1].pin2Ds[3]);
+    TwoPinRoute2D Net3 = Multi2TwoPinRoute(flattenNet[1], flattenNet[1].pin2Ds[0], flattenNet[1].pin2Ds[1]);
+    vector<TwoPinRoute2D> Nets{Net1, Net2, Net3};
+
+    TwoPinNets N2 = CreateNetSet(pro);
+    
+    for (auto n: Nets) {
+        // PrintTwoPinNet(n);
+        afterRouting(gSupGraph, n, N2);
+    }
+    for (auto n: N2.net) {
+        PrintTwoPinNet(n);
+    }
+    for (auto r: N2.usage) {
+        for (auto g: r) {
+            PrintGridSupply(g);
+        }
+        cout << endl;
+    }
+    int ite = 1;
+    BLMR(gSupGraph, N2, Net2, ite);
+    for (auto n: N2.net) {
+        PrintTwoPinNet(n);
+    }
+
     //int i = RerouteNet(Nets);
     //PrintTwoPinNet(Nets[i]);
 // //

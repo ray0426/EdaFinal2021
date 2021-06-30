@@ -52,7 +52,7 @@ struct TwoPinNets {
 struct BLMRgrid {
     Pos further;
     int len;
-    int cost = -1;
+    int cost;
     bool isBLC;
 };
 
@@ -63,12 +63,19 @@ void PrintRoute2D(Route2D a);
 void PrintNet2D(Net2D a);
 void PrintTwoPinNet(TwoPinRoute2D a);
 
+vector<Net2D> Three2Two(Problem *pro);
+
+void MergeNet (vector<Route2D>& routes);    //all twoPinNet Route put into it
+TwoPinRoute2D Multi2TwoPinRoute(Net2D& net, Pos sPin, Pos ePin);
+
+TwoPinNets CreateNetSet(Problem* pro);
+
 vector<vector<GridSupply>> GenerateGridSupplyGraph(Problem *pro);
 vector<vector<EdgeSupply>> Grid2EdgeSupply(vector<vector<GridSupply>>& graph);
 void SupplyChange(vector<vector<GridSupply>>& graph, Net2D newNet, Net2D oldNet = {});
+void afterRouting (vector<vector<GridSupply>>& graph, TwoPinRoute2D& net, TwoPinNets& netSet);
 
-vector<Net2D> Three2Two(Problem *pro);
-TwoPinRoute2D Multi2TwoPinRoute(Net2D& net, Pos sPin, Pos ePin);
 void SortTaskQueue(vector<TwoPinRoute2D>& twoPinNets,int chosen, vector<vector<GridSupply>>& graph);
 int RerouteNet(vector<TwoPinRoute2D>& twoPinNets);
+void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& net, int& ite);
 #endif
