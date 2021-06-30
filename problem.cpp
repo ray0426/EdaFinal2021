@@ -64,6 +64,8 @@ void Problem::readCase(char* inputfile) {
         }
         for (j = 0; j < mc.blockageCount; j++) {
             file >> str >> blkg.name >> c >> blkg.layer >> blkg.demand;
+            blkg.layer.erase(blkg.layer.begin());
+            blkg.layer_id = stoi(blkg.layer);
             mc.blkgs.push_back(blkg);
         }
         this->masterCells.push_back(mc);

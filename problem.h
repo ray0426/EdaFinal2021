@@ -32,7 +32,8 @@ struct MasterCellPin {
 // Blkg
 struct Blkg {
     string name;
-    int layer;
+    string layer;
+    int layer_id;
     float demand;
 };
 
