@@ -9,7 +9,7 @@
 using namespace std;
 
 void testH(Problem *pro);
-
+void evaluate(vector<vector<GridSupply>>& graph, vector<TwoPinNets>& netSet);
 int main(int argc, char **argv)
 {
     vector<vector<EdgeS>> edgeSkeleton;
@@ -33,39 +33,65 @@ int main(int argc, char **argv)
     //                          pro->GGridBD[2], pro->GGridBD[1], pro->GGridBD[3]);
     vector<TwoPinNets> netSets;
     TwoPinNets netSet;
+    TwoPinNets netSet2;
     vector<TwoPinRoute2D> queue;
     vector<Route2D> netPins;
     TwoPinRoute2D netRoute;
+
+    // PrintPos(flattenNet[1].pin2Ds[0]);
+    // cout << "safe";
     for (auto net : flattenNet) {
-        netSet = CreateNetSet(pro,net.name);
-        netSet.skeleton = rsmtAware(net.pin2Ds, pro->GGridBD[0],
-                                    pro->GGridBD[2], pro->GGridBD[1], pro->GGridBD[3]);
+        cout << net.name << endl;
+        // PrintPos(net.pin2Ds[0]);
+        
+        netSet = CreateNetSet(pro, net.name);
+        // if (net.name == "N2") {
+        //     netSet2 = CreateNetSet(pro, net.name);
+        // } else {
+        //     netSet = CreateNetSet(pro,net.name);
+        // }
+        
+        cout << "netSetCreate" << endl;
+        
+
+        // netSet.skeleton = rsmtAware(net.pin2Ds, pro->GGridBD[0],
+        //                             pro->GGridBD[2], pro->GGridBD[1], pro->GGridBD[3]);
         //make two Pins, gen route, put into queue
-        netPins = decomposition(net.pin2Ds);
+        // cout << "rsmt ";
+        // netPins = decomposition(net.pin2Ds);
+        // cout << "decompose" << endl;
         for (auto netPin: netPins) {
             netRoute = Multi2TwoPinRoute(net, netPin.sIdx, netPin.eIdx);
+            
+            // cout << "get Route: ";
+            // PrintRoute2D(netPin);
+            
             afterRouting(gSupGraph, netRoute, netSet);
+            // cout << "afterRouting" << endl;
         }
         netSets.push_back(netSet);
+// 
     }
-
-    int ite = 1;
-    int reRouteIdx;
-    while (ite < 10) {
-        // reRouteIdx = RerouteNet(queue);
-        // monotonic
-        SortTaskQueue(queue, gSupGraph);    //, reRouteIdx);
-        // queue.pop_back();   //if monotonic is do, don't do this
-        for (int j = 0; j < queue.size(); j++) {
-            for (int k = 0; k < netSets.size(); k++) {
-                if (netSets[k].name == queue[j].name) {
-                    BLMR(gSupGraph, netSets[k], queue[j], ite);
-                    break;
-                }
-            }
-        }
-        ite++;
-    }
+    
+    // int ite = 1;
+    // int reRouteIdx;
+    // while (ite < 10) {
+    //     // reRouteIdx = RerouteNet(queue);
+    //     // monotonic
+    //     SortTaskQueue(queue, gSupGraph);    //, reRouteIdx);
+    //     // queue.pop_back();   //if monotonic is do, don't do this
+    //     for (int j = 0; j < queue.size(); j++) {
+    //         for (int k = 0; k < netSets.size(); k++) {
+    //             if (netSets[k].name == queue[j].name) {
+    //                 BLMR(gSupGraph, netSets[k], queue[j], ite);
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     //evaluate part
+    //     evaluate(gSupGraph, netSets);
+    //     ite++;
+    // }
 
     delete pro;
     return 0;
@@ -158,4 +184,32 @@ void testH(Problem *pro)
     //for (auto n: Nets) {
     //    PrintTwoPinNet(n);
     //}
+}
+void evaluate(vector<vector<GridSupply>>& graph, vector<TwoPinNets>& netSet) {
+    vector<Route2D> multiPinNet;
+    int score = 0;
+
+    cout << "gridSupply(v,h)" << endl;
+    for (auto r : graph) {
+        for (auto g : r)
+        {
+            PrintGridSupply(g);
+        }
+        cout << endl;
+    }
+    cout << endl;
+
+    for (auto nS: netSet) {
+        multiPinNet.clear();
+        for (auto n: nS.net) {
+            for (auto line: n.route) {
+                multiPinNet.push_back(line);
+            }
+            MergeNet(multiPinNet);
+            for (auto line: multiPinNet) {
+                score += lineLen(line.sIdx, line.eIdx) * n.weight;
+            }
+        }
+    }
+    cout << "score is :" << score << endl;
 }

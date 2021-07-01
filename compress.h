@@ -17,6 +17,8 @@ void PrintNet2D(Net2D a);
 void PrintTwoPinNet(TwoPinRoute2D a);
 
 bool isPosSame(Pos &a, Pos &b);
+int lineLen (Pos start, Pos end);
+
 vector<Net2D> Three2Two(Problem *pro);
 
 void MergeNet(vector<Route2D> &routes); // all twoPinNet Route put into it

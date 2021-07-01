@@ -288,7 +288,7 @@ TwoPinNets CreateNetSet(Problem* pro, string& name) {
     g.h = 0;
     g.v = 0;
     vector<GridSupply> vec;
-
+    // cout << "setting";
     for (int i = 0; i < rowBound; i++) {
         vec.clear();
         for (int j = 0; j < colBound; j++){
@@ -297,6 +297,14 @@ TwoPinNets CreateNetSet(Problem* pro, string& name) {
         a.usage.push_back(vec);
     }
 
+    // for (auto r : a.usage)
+    // {
+    //     for (auto g : r)
+    //     {
+    //         PrintGridSupply(g);
+    //     }
+    //     cout << endl;
+    // }
     return a;
 }
 void changeTwoPinNet(TwoPinNets &netSet, TwoPinRoute2D &newNet) {
