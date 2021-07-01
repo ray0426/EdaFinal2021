@@ -76,13 +76,16 @@ vector<Route2D> decomposition(vector<Pos> pins) {
   vector<Route2D> route;
   Route2D route2d;
   Pos pos;
+  G.clear();
 
+  // cout << "test1" << endl;
   V = pins.size();
   E = (V * (V - 1)) / 2;
   for (i = 0; i < V; i++) {
     G.push_back(i);
   }
 
+  // cout << "test2" << endl;
   for (i = 0; i < V; i++)
     for (j = i + 1; j < V; j++)
       Esort.push_back({i, j, manh(pins[i], pins[j])});
@@ -92,22 +95,40 @@ vector<Route2D> decomposition(vector<Pos> pins) {
   //  cout << Esort[i].p1 << " " << Esort[i].p2 << " " << Esort[i].dist << endl;
   //}
 
+  // for (i = 0; i < V; i++) {
+  //  cout << "G(" << i << "): " << G[i] << endl;
+  //}
+  // for (i = 0; i < V; i++) {
+  //  cout << "find(" << i << "): " << find(i) << endl;
+  //}
+
+  // cout << "test3" << endl;
+  // cout << Esort.size() << endl;
   for (i = 0, j = 0; (i < V - 1) && (j < E); i++) {
+    // cout << "0" << endl;
+    // cout << "p1: " << Esort[j].p1 << ", p2:" << Esort[j].p2 << endl;
+    // cout << "1: " << find(Esort[j].p1) << ", 2:" << find(Esort[j].p2) <<
+    // endl;
     while (find(Esort[j].p1) == find(Esort[j].p2))
       j++;
+    // cout << "1" << endl;
     unionV(Esort[j].p1, Esort[j].p2);
     pos.row = pins[Esort[j].p1].row;
     pos.col = pins[Esort[j].p1].col;
     route2d.sIdx = pos;
+    // cout << "2" << endl;
     pos.row = pins[Esort[j].p2].row;
     pos.col = pins[Esort[j].p2].col;
     route2d.eIdx = pos;
+    // cout << "3" << endl;
     route.push_back(route2d);
+    // cout << "4" << endl;
     // cout << "起點：p" << Esort[j].p1 << ", 終點：p" << Esort[j].p2 << ",
     // 長度："
     //      << Esort[j].dist << endl;
     j++;
   }
+  // cout << "test4" << endl;
   // cout << manh(pins[1], pins[3]) << endl;
   return route;
 }

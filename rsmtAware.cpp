@@ -42,12 +42,14 @@ vector<vector<EdgeS>> rsmtAware(vector<Pos> pins, int mini, int maxi, int minj,
   vector<int> vp;
   vector<vector<EdgeS>> edgeSke;
 
+  //  cout << "test0" << endl;
   sort(pins.begin(), pins.end(), sortRow);
   it = unique(pins.begin(), pins.end(), samePos);
   pins.resize(distance(pins.begin(), it));
   sort(pins.begin(), pins.end(), sortRow);
   // print(pins);
 
+  //  cout << "test1" << endl;
   edgeSke.resize(maxi - mini + 1);
   // cout << edgeSke.size() << endl;
   for (i = 0; i < edgeSke.size(); i++) {
@@ -57,6 +59,7 @@ vector<vector<EdgeS>> rsmtAware(vector<Pos> pins, int mini, int maxi, int minj,
     }
   }
 
+  //  cout << "test2" << endl;
   while (key1) {
     // cout << "test pinsize: " << pins.size() << endl;
     key1 = 0;
@@ -117,6 +120,7 @@ vector<vector<EdgeS>> rsmtAware(vector<Pos> pins, int mini, int maxi, int minj,
   // cout << "finish fix" << endl;
   // print(pins);
 
+  //  cout << "test3" << endl;
   for (i = 1; i < pins.size(); i++) {
     v.push_back(pins[i].row - pins[i - 1].row);
   }
@@ -127,6 +131,7 @@ vector<vector<EdgeS>> rsmtAware(vector<Pos> pins, int mini, int maxi, int minj,
   //  cout << h << endl;
   //  cout << v << endl;
 
+  //  cout << "test4" << endl;
   pins2 = pins;
   for (i = 0; i < pins.size(); i++) {
     pins2[i].col = i + 1;
@@ -138,7 +143,12 @@ vector<vector<EdgeS>> rsmtAware(vector<Pos> pins, int mini, int maxi, int minj,
   idx = idxOfPosSeq(posSeq);
   // cout << idx << endl;
 
+  // cout << "test5" << endl;
+  // cout << "size: " << pins2.size() << endl;
+  if (pins2.size() == 1)
+    return edgeSke;
   pptable = genLookupTable(pins2.size());
+  // cout << "test5-1" << endl;
   post = pptable.result[idx].post;
   // cout << post.size() << endl;
   // for (i = 0; i < post.size(); i++) {
@@ -146,6 +156,7 @@ vector<vector<EdgeS>> rsmtAware(vector<Pos> pins, int mini, int maxi, int minj,
   //       << post[i].ecol << endl;
   //}
 
+  // cout << "test6" << endl;
   sort(pins.begin(), pins.end(), sortRow);
   for (i = 0; i < pins.size(); i++) {
     vp.push_back(pins[i].row);
@@ -157,6 +168,7 @@ vector<vector<EdgeS>> rsmtAware(vector<Pos> pins, int mini, int maxi, int minj,
   // cout << hp << endl;
   // cout << vp << endl;
 
+  // cout << "test7" << endl;
   for (i = 0; i < post.size(); i++) {
     if (post[i].srow == post[i].erow) {
       edges.row = 1;
@@ -179,6 +191,7 @@ vector<vector<EdgeS>> rsmtAware(vector<Pos> pins, int mini, int maxi, int minj,
     }
   }
 
+  // cout << "test8" << endl;
   return edgeSke;
 }
 
