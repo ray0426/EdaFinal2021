@@ -95,6 +95,7 @@ void PrintGridSupply(GridSupply a) {
 }
 void PrintBLMRgrid(BLMRgrid a) {
     cout << a.cost << " ";
+    PrintPos(a.further);
 }
 
 bool isPosSame (Pos& a, Pos& b) {
@@ -527,6 +528,14 @@ vector<Route2D> FindRoute (vector<Route2D>& ref, Pos sPin, Pos ePin) {
     vector<Route2D> route;
     Route2D line;
     FindRouteRaw(rawRoute,ref,sPin,ePin);
+    if (rawRoute->size() == 1) {
+        if (isPosSame(sPin,ePin)) {
+            line.eIdx = ePin;
+            line.sIdx = sPin;
+            route.push_back(line);
+            return route;
+        }
+    }
     for (int i = 0; i < rawRoute->size() - 1; i++) {
         line.sIdx = i == 0 ? sPin : rawRoute->at(i).sIdx;
         line.eIdx = rawRoute->at(i + 1).sIdx;
@@ -569,7 +578,7 @@ void FindRouteRaw (vector<Route2D>* route, vector<Route2D>& ref, Pos sPin, Pos e
 
         // test whether line is in route already
         for (auto usedline: *route) {
-            if (isPosSame(end,usedline.eIdx) && isPosSame(start,usedline.sIdx)) {
+            if ((isPosSame(end,usedline.eIdx) && isPosSame(start,usedline.sIdx)) || (isPosSame(end,usedline.sIdx) && isPosSame(start,usedline.eIdx))) {
                 isLineUsed = true;
             }
         }
@@ -585,8 +594,12 @@ void FindRouteRaw (vector<Route2D>* route, vector<Route2D>& ref, Pos sPin, Pos e
                 Pin.col = start.col;
                 for (int i = min(end.row, start.row); i <= max(end.row, start.row); i++){
                     Pin.row = i;
+
+                    // PrintPos(Pin);
+                    // cout << endl;
+
                     FindRouteRaw(route, ref, Pin, ePin);
-                    if (isPosSame(route->back().eIdx,ePin)) {
+                    if (isPosSame(route->back().eIdx,ePin) && isPosSame(route->back().sIdx,ePin)) {
                         return;
                     }
                 }
@@ -594,8 +607,12 @@ void FindRouteRaw (vector<Route2D>* route, vector<Route2D>& ref, Pos sPin, Pos e
                 Pin.row = start.row;
                 for (int i = min(end.col, start.col); i <= max(end.col, start.col); i++){
                     Pin.col = i;
+
+                    // PrintPos(Pin);
+                    // cout << endl;
+
                     FindRouteRaw(route, ref, Pin, ePin);
-                    if (isPosSame(route->back().eIdx,ePin)) {
+                    if (isPosSame(route->back().eIdx,ePin) && isPosSame(route->back().sIdx,ePin)) {
                         return;
                     }
                 }
@@ -623,7 +640,21 @@ void SortTaskQueue (vector<TwoPinRoute2D>& twoPinNets, vector<vector<GridSupply>
         twoPinNets.push_back(chosenNet);
     } else {
         sort(twoPinNets.begin(), twoPinNets.end(), [ref](TwoPinRoute2D a, TwoPinRoute2D b) {
-            return score(a, ref) > score(b, ref);
+            // PrintPos(a.sPin);
+            // PrintPos(a.ePin);
+            // cout << endl;
+            // for (auto k: a.route) {
+            //     PrintRoute2D(k);
+            // }
+            // PrintPos(b.sPin);
+            // PrintPos(b.ePin);
+            // cout << endl;
+            // for (auto k: b.route) {
+            //     PrintRoute2D(k);
+            // }
+            // cout << endl;
+
+            return score(a, ref) >= score(b, ref);
         });
     }
 }
@@ -651,6 +682,8 @@ int score(TwoPinRoute2D twoPinNet, vector<vector<GridSupply>>* graph) {
             }
         }
     }
+    // cout << score << endl;
+    return score;
 }
 int lineLen (Pos start, Pos end) {
     return abs(start.row - end.row) + abs(start.col - end.col);
@@ -828,14 +861,29 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
         }
     }
     // cout << "find\n";
-    //end back to start
+    // end back to start
+    // for (auto a: BLMRmap) {
+    //     for (auto b: a) {
+    //         PrintBLMRgrid(b);
+    //     }
+    //     cout << endl;
+    // }
+    // cout << endl;
+
     line.eIdx = end;
     line.sIdx = BLMRmap[end.row - 1][end.col - 1].further;
     while (!isPosSame(line.sIdx, start)) {
         nextPos = BLMRmap[line.sIdx.row - 1][line.sIdx.col - 1].further;
         if (isPininRoute(nextPos,line.eIdx,line.sIdx)) {
+            // cout << "line" << endl;
             line.sIdx = nextPos;
         } else {
+            // cout << "turn" << endl;
+            // PrintPos(nextPos);
+            // PrintPos(line.eIdx);
+            // PrintPos(line.sIdx);
+            // cout << endl;
+
             route.push_back(line);
             line.eIdx = line.sIdx;
             line.sIdx = nextPos;
@@ -895,7 +943,9 @@ int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<G
         }
     }
 
-    eCost = (1 + C3 / exp(C4 * float(eSupply)) + C6 / (pow(2.0, float(ite))) - isSkeleton * w);
+    // cout << isSkeleton << endl;
+
+    eCost = (10 + C3 / exp(C4 * float(eSupply)) + C6 / (pow(2.0, float(ite))) - isSkeleton * w);
     if (eSupply <= 0) {
         PrintRoute2D(line);
         PrintEdgeSupply(graph[line.sIdx.row - 1][max(line.sIdx.col, line.eIdx.col) - 1]);
