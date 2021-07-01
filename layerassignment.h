@@ -2,6 +2,7 @@
 #define LAYERASSIGNMENT_H
 
 #include "problem.h"
+#include "structures.h"
 #include <bits/stdc++.h>
 #define _INF 1<<24
 using namespace std;
