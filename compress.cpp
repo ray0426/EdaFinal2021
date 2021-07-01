@@ -3,6 +3,7 @@
 #include <string>
 #include "problem.h"
 #include "compress.h"
+#include "rsmtAware.h"
 #include <algorithm>
 #include <math.h>
 using namespace std;
@@ -24,7 +25,7 @@ vector<Net2D> Three2Two (Problem* pro);
 Route2D mergeLine(Route2D& a, Route2D& b);
 void MergeNet (vector<Route2D>& routes);
 
-TwoPinNets CreateNetSet(Problem* pro);
+TwoPinNets CreateNetSet(Problem* pro, string& name);
 void changeTwoPinNet(TwoPinNets &netSet, TwoPinRoute2D &newNet);
 void changeUsage(vector<vector<GridSupply>>& usage,TwoPinRoute2D &net, bool add = true);
 
@@ -37,16 +38,16 @@ TwoPinRoute2D Multi2TwoPinRoute(Net2D& net, Pos sPin, Pos ePin);
 vector<Route2D> FindRoute(vector<Route2D> &ref, Pos sPin, Pos ePin);
 void FindRouteRaw(vector<Route2D> *route, vector<Route2D> &ref, Pos sPin, Pos ePin);
 
-void SortTaskQueue(vector<TwoPinRoute2D> &twoPinNets, int chosen, vector<vector<GridSupply>> &graph);
+void SortTaskQueue(vector<TwoPinRoute2D> &twoPinNets, vector<vector<GridSupply>> &graph, int chosen);
 int score(TwoPinRoute2D twoPinNet, vector<vector<GridSupply>> *graph);
 int lineLen (Pos start, Pos end);
 int RerouteNet(vector<TwoPinRoute2D>& twoPinNets);
 int bounding(TwoPinRoute2D net);
 
-void BLMR(vector<vector<GridSupply>> &graph, TwoPinNets &netSet, TwoPinRoute2D &net, int &ite);
+void BLMR(vector<vector<GridSupply>> &graph, TwoPinNets &netSet, TwoPinRoute2D &net, int &ite, vector<vector<EdgeS>>& skeleton);
 int findPath(vector<Pos> &list, vector<vector<BLMRgrid>> &map);
 bool isBLCobtained(int &historyLen, Pos &grid, int &gridLen, Pos &start, Pos &end, int &ite);
-int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<GridSupply>>& usage, int& ite);
+int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<GridSupply>>& usage, int& ite, vector<vector<EdgeS>>& skeleton);
 bool needChange(BLMRgrid stepGrid, int nowCost, int nowLen, bool isBLC);
 TwoPinRoute2D Monotonic();
 
@@ -278,15 +279,16 @@ void MergeNet (vector<Route2D>& routes) {
     return;
 }
 
-TwoPinNets CreateNetSet(Problem* pro) {
+TwoPinNets CreateNetSet(Problem* pro, string& name) {
     TwoPinNets a;
     int rowBound = pro->GGridBD[2];
     int colBound = pro->GGridBD[3];
+    a.name = name;
     GridSupply g;
     g.h = 0;
     g.v = 0;
     vector<GridSupply> vec;
-
+    // cout << "setting";
     for (int i = 0; i < rowBound; i++) {
         vec.clear();
         for (int j = 0; j < colBound; j++){
@@ -295,6 +297,14 @@ TwoPinNets CreateNetSet(Problem* pro) {
         a.usage.push_back(vec);
     }
 
+    // for (auto r : a.usage)
+    // {
+    //     for (auto g : r)
+    //     {
+    //         PrintGridSupply(g);
+    //     }
+    //     cout << endl;
+    // }
     return a;
 }
 void changeTwoPinNet(TwoPinNets &netSet, TwoPinRoute2D &newNet) {
@@ -485,15 +495,15 @@ void afterRouting (vector<vector<GridSupply>>& graph, TwoPinRoute2D& net, TwoPin
     for (int row = 0; row < graph.size(); row++) {
         for (int col = 0; col < graph[0].size(); col++) {
             if (oldUsage[row][col].h == 0 && newUsage[row][col].h != 0) {
-                graph[row][col].h++;
-            } else if(oldUsage[row][col].h != 0 && newUsage[row][col].h == 0) {
                 graph[row][col].h--;
+            } else if(oldUsage[row][col].h != 0 && newUsage[row][col].h == 0) {
+                graph[row][col].h++;
             }
 
             if (oldUsage[row][col].v == 0 && newUsage[row][col].v != 0) {
-                graph[row][col].v++;
-            } else if(oldUsage[row][col].v != 0 && newUsage[row][col].v == 0) {
                 graph[row][col].v--;
+            } else if(oldUsage[row][col].v != 0 && newUsage[row][col].v == 0) {
+                graph[row][col].v++;
             }
         }
     }
@@ -601,16 +611,21 @@ void FindRouteRaw (vector<Route2D>* route, vector<Route2D>& ref, Pos sPin, Pos e
 }
 
 //used only after finish a inter of Net rerouting
-void SortTaskQueue (vector<TwoPinRoute2D>& twoPinNets, int  chosen, vector<vector<GridSupply>>& graph) {
+void SortTaskQueue (vector<TwoPinRoute2D>& twoPinNets, vector<vector<GridSupply>>& graph, int  chosen) {
     //not sure whether go wrong
-    TwoPinRoute2D chosenNet = twoPinNets.at(chosen);
-    twoPinNets.erase(twoPinNets.begin() + chosen);
     vector<vector<GridSupply>> *ref = &graph;
-
-    sort(twoPinNets.begin(), twoPinNets.end(), [ref](TwoPinRoute2D a, TwoPinRoute2D b) {
+    if (chosen != -1) {
+        TwoPinRoute2D chosenNet = twoPinNets.at(chosen);
+        twoPinNets.erase(twoPinNets.begin() + chosen);
+        sort(twoPinNets.begin(), twoPinNets.end(), [ref](TwoPinRoute2D a, TwoPinRoute2D b) {
+                return score(a, ref) > score(b, ref);
+            });
+        twoPinNets.push_back(chosenNet);
+    } else {
+        sort(twoPinNets.begin(), twoPinNets.end(), [ref](TwoPinRoute2D a, TwoPinRoute2D b) {
             return score(a, ref) > score(b, ref);
         });
-    twoPinNets.push_back(chosenNet);
+    }
 }
 int score(TwoPinRoute2D twoPinNet, vector<vector<GridSupply>>* graph) {
     int coefOver = 30;
@@ -662,7 +677,7 @@ int bounding (TwoPinRoute2D net) {
 
 void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& net, int& ite) {
     //copy data
-    
+    vector<vector<EdgeS>> skeleton = netSet.skeleton;
     Pos start = net.sPin;
     Pos end = net.ePin;
     int oldLen = 0;
@@ -707,7 +722,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
     bool isBLC;
     Pos nextPos;
 
-    cout << "setting\n";
+    // cout << "setting\n";
     //clear now routed net && get operated var
     TwoPinRoute2D newNet = net;
     newNet.route.clear();
@@ -722,7 +737,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
     // }
     // cout << endl;
 
-    cout << "clear\n";
+    // cout << "clear\n";
     //find end
     while (true) { //do until mapIdx == end
         //find grid with less cost
@@ -752,7 +767,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
             lineEnd.col = mapIdx.col;
             line.eIdx = lineEnd;
 
-            lineSupply = costOfEdge(line, supplyG, usage, ite);
+            lineSupply = costOfEdge(line, supplyG, usage, ite, skeleton);
             stepGrid = BLMRmap[lineEnd.row - 1][lineEnd.col - 1];
             if (needChange(stepGrid, grid.cost + lineSupply, grid.len + 1, isBLC)) {
                 stepGrid.cost = grid.cost + lineSupply;
@@ -768,7 +783,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
             lineEnd.col = mapIdx.col;
             line.eIdx = lineEnd;
 
-            lineSupply = costOfEdge(line, supplyG, usage, ite);
+            lineSupply = costOfEdge(line, supplyG, usage, ite, skeleton);
             stepGrid = BLMRmap[lineEnd.row - 1][lineEnd.col - 1];
             if (needChange(stepGrid, grid.cost + lineSupply, grid.len + 1, isBLC)) {
                 stepGrid.cost = grid.cost + lineSupply;
@@ -784,7 +799,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
             lineEnd.col = mapIdx.col - 1;
             line.eIdx = lineEnd;
 
-            lineSupply = costOfEdge(line, supplyG, usage, ite);
+            lineSupply = costOfEdge(line, supplyG, usage, ite, skeleton);
             stepGrid = BLMRmap[lineEnd.row - 1][lineEnd.col - 1];
             if (needChange(stepGrid, grid.cost + lineSupply, grid.len + 1, isBLC)) {
                 stepGrid.cost = grid.cost + lineSupply;
@@ -800,7 +815,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
             lineEnd.col = mapIdx.col + 1;
             line.eIdx = lineEnd;
 
-            lineSupply = costOfEdge(line, supplyG, usage, ite);
+            lineSupply = costOfEdge(line, supplyG, usage, ite, skeleton);
             stepGrid = BLMRmap[lineEnd.row - 1][lineEnd.col - 1];
             if (needChange(stepGrid, grid.cost + lineSupply, grid.len + 1, isBLC)) {
                 stepGrid.cost = grid.cost + lineSupply;
@@ -812,7 +827,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
             }
         }
     }
-    cout << "find\n";
+    // cout << "find\n";
     //end back to start
     line.eIdx = end;
     line.sIdx = BLMRmap[end.row - 1][end.col - 1].further;
@@ -827,10 +842,11 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
         }
     }
     route.push_back(line);
-    cout << "end\n";
+    // cout << "end\n";
     //refine
     newNet.route = route;
     afterRouting(graph,  newNet, netSet);
+    net = newNet;
     return;
     // return newNet;
 }
@@ -855,9 +871,11 @@ bool isBLCobtained(int &historyLen, Pos &grid, int &gridLen,Pos &start, Pos &end
     return (BLC > ew + float(gridLen));
 }
 //consider skeleton edge
-int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<GridSupply>>& usage, int& ite){
+int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<GridSupply>>& usage, int& ite, vector<vector<EdgeS>>& skeleton){
     float eCost;
+    float isSkeleton;
     float kappa = 10000;
+    float w = 5.0;
     float eSupply = 0.0;
     float C3 = 150.0;
     float C4 = 0.3;
@@ -865,17 +883,19 @@ int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<G
     float C6 = 200.0;
     if (isLineVertical(line.sIdx,line.eIdx)) {
         eSupply = float(graph[max(line.sIdx.row, line.eIdx.row) - 1][line.sIdx.col - 1].row);
+        isSkeleton = float(skeleton[min(line.eIdx.row,line.sIdx.row) - 1][line.sIdx.col - 1].col);
         if (eSupply > 0 && usage[line.sIdx.row - 1][line.sIdx.col - 1].v > 0 && usage[line.eIdx.row - 1][line.eIdx.col - 1].v > 0) {
             return 0;
         }
     } else {
         eSupply = float(graph[line.sIdx.row - 1][max(line.sIdx.col, line.eIdx.col) - 1].col);
+        isSkeleton = float(skeleton[line.sIdx.row - 1][min(line.sIdx.col, line.eIdx.col) - 1].row);
         if (eSupply > 0 && usage[line.sIdx.row - 1][line.sIdx.col - 1].h > 0 && usage[line.eIdx.row - 1][line.eIdx.col - 1].h > 0) {
             return 0;
         }
     }
 
-    eCost = (1 + C3 / exp(C4 * float(eSupply)) + C6 / (pow(2.0, float(ite))));
+    eCost = (1 + C3 / exp(C4 * float(eSupply)) + C6 / (pow(2.0, float(ite))) - isSkeleton * w);
     if (eSupply <= 0) {
         PrintRoute2D(line);
         PrintEdgeSupply(graph[line.sIdx.row - 1][max(line.sIdx.col, line.eIdx.col) - 1]);
