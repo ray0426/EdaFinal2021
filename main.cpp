@@ -60,11 +60,6 @@ int main(int argc, char **argv)
             for (int k = 0; k < netSets.size(); k++) {
                 if (netSets[k].name == queue[j].name) {
                     BLMR(gSupGraph, netSets[k], queue[j], ite);
-                    for (auto n: netSets[k].net) {
-                        if (isPosSame(n.ePin,queue[j].ePin)&&isPosSame(n.sPin,queue[j].sPin)) {
-                            queue[j] = n;
-                        }
-                    }
                     break;
                 }
             }

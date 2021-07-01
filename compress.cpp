@@ -714,7 +714,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
     bool isBLC;
     Pos nextPos;
 
-    cout << "setting\n";
+    // cout << "setting\n";
     //clear now routed net && get operated var
     TwoPinRoute2D newNet = net;
     newNet.route.clear();
@@ -729,7 +729,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
     // }
     // cout << endl;
 
-    cout << "clear\n";
+    // cout << "clear\n";
     //find end
     while (true) { //do until mapIdx == end
         //find grid with less cost
@@ -819,7 +819,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
             }
         }
     }
-    cout << "find\n";
+    // cout << "find\n";
     //end back to start
     line.eIdx = end;
     line.sIdx = BLMRmap[end.row - 1][end.col - 1].further;
@@ -834,10 +834,11 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
         }
     }
     route.push_back(line);
-    cout << "end\n";
+    // cout << "end\n";
     //refine
     newNet.route = route;
     afterRouting(graph,  newNet, netSet);
+    net = newNet;
     return;
     // return newNet;
 }
