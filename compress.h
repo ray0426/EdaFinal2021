@@ -31,8 +31,8 @@ void SupplyChange(vector<vector<GridSupply>> &graph, Net2D newNet,
 void afterRouting(vector<vector<GridSupply>> &graph, TwoPinRoute2D &net,
                   TwoPinNets &netSet);
 
-void SortTaskQueue(vector<TwoPinRoute2D> &twoPinNets, int chosen,
-                   vector<vector<GridSupply>> &graph);
+void SortTaskQueue(vector<TwoPinRoute2D> &twoPinNets,
+                   vector<vector<GridSupply>> &graph, int chosen = -1);
 int RerouteNet(vector<TwoPinRoute2D> &twoPinNets);
 void BLMR(vector<vector<GridSupply>> &graph, TwoPinNets &netSet,
           TwoPinRoute2D &net, int &ite);

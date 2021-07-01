@@ -38,7 +38,7 @@ TwoPinRoute2D Multi2TwoPinRoute(Net2D& net, Pos sPin, Pos ePin);
 vector<Route2D> FindRoute(vector<Route2D> &ref, Pos sPin, Pos ePin);
 void FindRouteRaw(vector<Route2D> *route, vector<Route2D> &ref, Pos sPin, Pos ePin);
 
-void SortTaskQueue(vector<TwoPinRoute2D> &twoPinNets, int chosen, vector<vector<GridSupply>> &graph);
+void SortTaskQueue(vector<TwoPinRoute2D> &twoPinNets, vector<vector<GridSupply>> &graph, int chosen);
 int score(TwoPinRoute2D twoPinNet, vector<vector<GridSupply>> *graph);
 int lineLen (Pos start, Pos end);
 int RerouteNet(vector<TwoPinRoute2D>& twoPinNets);
@@ -603,16 +603,21 @@ void FindRouteRaw (vector<Route2D>* route, vector<Route2D>& ref, Pos sPin, Pos e
 }
 
 //used only after finish a inter of Net rerouting
-void SortTaskQueue (vector<TwoPinRoute2D>& twoPinNets, int  chosen, vector<vector<GridSupply>>& graph) {
+void SortTaskQueue (vector<TwoPinRoute2D>& twoPinNets, vector<vector<GridSupply>>& graph, int  chosen) {
     //not sure whether go wrong
-    TwoPinRoute2D chosenNet = twoPinNets.at(chosen);
-    twoPinNets.erase(twoPinNets.begin() + chosen);
     vector<vector<GridSupply>> *ref = &graph;
-
-    sort(twoPinNets.begin(), twoPinNets.end(), [ref](TwoPinRoute2D a, TwoPinRoute2D b) {
+    if (chosen != -1) {
+        TwoPinRoute2D chosenNet = twoPinNets.at(chosen);
+        twoPinNets.erase(twoPinNets.begin() + chosen);
+        sort(twoPinNets.begin(), twoPinNets.end(), [ref](TwoPinRoute2D a, TwoPinRoute2D b) {
+                return score(a, ref) > score(b, ref);
+            });
+        twoPinNets.push_back(chosenNet);
+    } else {
+        sort(twoPinNets.begin(), twoPinNets.end(), [ref](TwoPinRoute2D a, TwoPinRoute2D b) {
             return score(a, ref) > score(b, ref);
         });
-    twoPinNets.push_back(chosenNet);
+    }
 }
 int score(TwoPinRoute2D twoPinNet, vector<vector<GridSupply>>* graph) {
     int coefOver = 30;

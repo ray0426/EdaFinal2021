@@ -3,6 +3,7 @@
 #include "compress.h"
 #include "problem.h"
 #include "rsmtAware.h"
+#include "kruskal.h"
 #include <string>
 #include <vector>
 using namespace std;
@@ -33,21 +34,28 @@ int main(int argc, char **argv)
     vector<TwoPinNets> netSets;
     TwoPinNets netSet;
     vector<TwoPinRoute2D> queue;
+    vector<Route2D> netPins;
+    TwoPinRoute2D netRoute;
     for (auto net : flattenNet) {
         netSet = CreateNetSet(pro,net.name);
         netSet.skeleton = rsmtAware(net.pin2Ds, pro->GGridBD[0],
                                     pro->GGridBD[2], pro->GGridBD[1], pro->GGridBD[3]);
         //make two Pins, gen route, put into queue
+        netPins = decomposition(net.pin2Ds);
+        for (auto netPin: netPins) {
+            netRoute = Multi2TwoPinRoute(net, netPin.sIdx, netPin.eIdx);
+            afterRouting(gSupGraph, netRoute, netSet);
+        }
         netSets.push_back(netSet);
     }
 
     int ite = 1;
     int reRouteIdx;
     while (ite < 10) {
-        reRouteIdx = RerouteNet(queue);
+        // reRouteIdx = RerouteNet(queue);
         // monotonic
-        SortTaskQueue(queue, reRouteIdx, gSupGraph);
-        queue.pop_back();   //if monotonic is do, don't do this
+        SortTaskQueue(queue, gSupGraph);    //, reRouteIdx);
+        // queue.pop_back();   //if monotonic is do, don't do this
         for (int j = 0; j < queue.size(); j++) {
             for (int k = 0; k < netSets.size(); k++) {
                 if (netSets[k].name == queue[j].name) {
