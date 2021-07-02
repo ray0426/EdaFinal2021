@@ -309,12 +309,12 @@ void _route_print(la_Route r, Problem *p)
     int n_route = 0;
     for(auto n : r.nets) n_route += n.wires.size();
     printf("NumMovedCellInst 0\nNumRoutes %d\n", n_route);
-    for(int i = 0; i < r.nets.size(); i++)
+    for(auto n : r.nets)
     {
-        for(auto w : r.nets.at(i).wires)
+        for(auto w : n.wires)
         {
             printf("%d %d %d %d %d %d N%d\n", w.s_row, w.s_col, w.s_layer, 
-            w.e_row, w.e_col, w.e_layer, i+1);
+            w.e_row, w.e_col, w.e_layer, n.id);
         }
     }
 }
@@ -323,12 +323,6 @@ void _layer_assignment_and_print_route(Problem *p, vector<Net2D> &net)
 {
     vector<la_Net2d> net2d;
     net2d = _transform(net, p);
-    for(auto n : net2d)
-    {
-        printf("N%d\n", n.id);
-        for(auto v : n.vertex) v->_print();
-        printf("\n");
-    }
     _net_ordering(net2d);
 
     //count supply and demand for each grid
@@ -368,7 +362,6 @@ void _layer_assignment_and_print_route(Problem *p, vector<Net2D> &net)
 
     //assignment
     la_Route r;
-    r.nets.resize(p->NumNet);
     vector<la_Vertex2d*> dft;
     for(auto a : net2d)
     {

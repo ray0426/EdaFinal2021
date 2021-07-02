@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     // testH(pro);
 
     vector<Net2D> flattenNet = Three2Two(pro);
-    /*
+    
     vector<vector<GridSupply>> gSupGraph = GenerateGridSupplyGraph(pro);
     vector<vector<GridSupply>> testGSupGraph = gSupGraph;
     // vector<vector<EdgeSupply>> eSupGraph = Grid2EdgeSupply(gSupGraph);
@@ -193,15 +193,10 @@ int main(int argc, char **argv)
         flattenNetAns.push_back(bufferNet2D);
     }
     printf("\n");
-    */
-   for(auto a : flattenNet)
-   {
-       printf("%s\n", a.name);
-       for(auto r : a.route2Ds) printf("(%d,%d)<->(%d,%d)\n", r.sIdx.row, r.sIdx.col, r.eIdx.row, r.eIdx.col);
-   }
+    
 
     // use flattenNetAns to do 3D
-    _layer_assignment_and_print_route(pro, flattenNet);
+    _layer_assignment_and_print_route(pro, flattenNetAns);
 
     delete pro;
     return 0;

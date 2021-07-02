@@ -67,14 +67,16 @@ void PrintRoute2D(Route2D a) {
 void PrintNet2D(Net2D a) {
     cout << a.name << " " << a.weight << endl;
     cout << "pin" << endl;
-    for (auto pin: a.pin2Ds) {
-        PrintPos(pin);
+    for (auto pin: a.pinWithLay) {
+        PrintPos(pin.locate);
+        cout << "lay: " << pin.lay << endl;
     }
-    cout << endl;
     cout << "route" << endl;
     for (auto route: a.route2Ds) {
         PrintRoute2D(route);
     }
+    cout << "min route Lay:" << a.minRouteLay << endl;
+    cout << endl;
 }
 void PrintTwoPinNet(TwoPinRoute2D a) {
     cout << "twoPin " << a.name << " " << a.weight << endl;
@@ -156,7 +158,8 @@ vector<Net2D> Three2Two (Problem* pro) {
         //seting name and weight
         flatenNet.name = CurrentNet.name;
         flatenNet.weight = CurrentNet.weight;
-        
+
+        flatenNet.minRouteLay = 1;
         for (auto lay: pro->layers) {
             if (CurrentNet.minRouteLayConst == lay.name) {
                 flatenNet.minRouteLay = lay.Idx;
@@ -165,6 +168,7 @@ vector<Net2D> Three2Two (Problem* pro) {
         }
 
         pins.clear();
+        pinsWithLay.clear();
         //finding flatenNet.pin2Ds
         for (int j = 0; j < CurrentNet.NumPins; j++) {
             instName = CurrentNet.pins[j].instName;
@@ -424,7 +428,7 @@ vector<vector<GridSupply>> GenerateGridSupplyGraph (Problem* pro) {
         else if (lay.direction == 'V')
             vSupply += lay.defaultsupply;
     }
-    cout << hSupply << " " << vSupply;
+    // cout << hSupply << " " << vSupply;
     //assert defaultsupply to grids
     for (int i = 0; i < rowBound; i++) {
         rowGraph.clear();
