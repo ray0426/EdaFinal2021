@@ -102,8 +102,8 @@ int main(int argc, char **argv)
         {
             if (netSets[k].name == queue[reRouteIdx].name)
             {
-                Monotonic(gSupGraph, netSets[k], queue[reRouteIdx], ite);
-                // BLMR(gSupGraph, netSets[k], queue[reRouteIdx], ite);
+                // Monotonic(gSupGraph, netSets[k], queue[reRouteIdx], ite);
+                BLMR(gSupGraph, netSets[k], queue[reRouteIdx], ite);
                 break;
             }
         }
