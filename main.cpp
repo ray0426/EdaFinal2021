@@ -9,7 +9,7 @@
 using namespace std;
 
 void testH(Problem *pro);
-void evaluate(vector<vector<GridSupply>> &graph, vector<TwoPinNets> &netSet);
+int evaluate(vector<vector<GridSupply>> &graph, vector<TwoPinNets> &netSet);
 int main(int argc, char **argv)
 {
     vector<vector<EdgeS>> edgeSkeleton;
@@ -32,8 +32,8 @@ int main(int argc, char **argv)
     //                          pro->GGridBD[2], pro->GGridBD[1],
     //                          pro->GGridBD[3]);
     vector<TwoPinNets> netSets;
+    vector<TwoPinNets> ans;
     TwoPinNets netSet;
-    TwoPinNets netSet2;
     vector<TwoPinRoute2D> queue;
     vector<Route2D> netPins;
     TwoPinRoute2D netRoute;
@@ -77,12 +77,14 @@ int main(int argc, char **argv)
 
     
     int ite = 1;
-    evaluate(gSupGraph, netSets);
+    int nowScore = evaluate(gSupGraph, netSets);
+    int score;
+    ans = netSets;
     int reRouteIdx;
-    while (ite < 10)
+    while (ite < 50)
     {
         // cout << "sort" << endl;
-        //     // reRouteIdx = RerouteNet(queue);
+        reRouteIdx = RerouteNet(queue);
         //     // monotonic
         SortTaskQueue(queue, gSupGraph); //, reRouteIdx);
         //     // queue.pop_back();   //if monotonic is do, don't do this
@@ -116,7 +118,11 @@ int main(int argc, char **argv)
         }
         // evaluate part
         cout << ite << endl;
-        evaluate(gSupGraph, netSets);
+        score = evaluate(gSupGraph, netSets);
+        if (nowScore > score) {
+            ans = netSets;
+            nowScore = score;
+        }
         ite++;
     }
     delete pro;
@@ -215,21 +221,25 @@ void testH(Problem *pro)
     //    PrintTwoPinNet(n);
     //}
 }
-void evaluate(vector<vector<GridSupply>> &graph, vector<TwoPinNets> &netSet)
+int evaluate(vector<vector<GridSupply>> &graph, vector<TwoPinNets> &netSet)
 {
     vector<Route2D> multiPinNet;
     int score = 0;
+    bool isOverflowed = false;
 
     cout << "gridSupply(v,h)" << endl;
     for (auto r : graph)
     {
         for (auto g : r)
         {
-            PrintGridSupply(g);
+            if (g.h < 0 || g.v < 0) {
+                isOverflowed = true;
+                cout << "overflowed ";
+                PrintGridSupply(g);
+                cout << endl;
+            }
         }
-        cout << endl;
     }
-    cout << endl;
 
     for (auto nS : netSet)
     {
@@ -248,4 +258,6 @@ void evaluate(vector<vector<GridSupply>> &graph, vector<TwoPinNets> &netSet)
         }
     }
     cout << "score is :" << score << endl;
+    cout << endl;
+    return isOverflowed ? 10000 : score;
 }

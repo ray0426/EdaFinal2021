@@ -725,6 +725,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
     vector<BLMRgrid> bufferVec;
     BLMRgrid buffer;
     buffer.cost = -1;
+    buffer.isFixed = false;
     for (int i = 0; i < graph.size(); i++) {
         bufferVec.clear();
         for (int j = 0; j < graph[0].size(); j++) {
@@ -793,8 +794,10 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
         need.erase(need.begin() + needIdx);
 
         line.sIdx = mapIdx;
+        BLMRmap[mapIdx.row - 1][mapIdx.col - 1].isFixed = true;
         grid = BLMRmap[mapIdx.row - 1][mapIdx.col - 1];
         isBLC = isBLCobtained(oldLen, mapIdx, grid.len, start, end, ite);
+
         if (mapIdx.row != 1) { // upper
             lineEnd.row = mapIdx.row - 1;
             lineEnd.col = mapIdx.col;
@@ -922,7 +925,7 @@ bool isBLCobtained(int &historyLen, Pos &grid, int &gridLen,Pos &start, Pos &end
 int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<GridSupply>>& usage, int& ite, vector<vector<EdgeS>>& skeleton){
     float eCost;
     float isSkeleton;
-    float kappa = 10000;
+    float kappa = 100000;
     float w = 5.0;
     float eSupply = 0.0;
     float C3 = 150.0;
@@ -945,17 +948,19 @@ int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<G
 
     // cout << isSkeleton << endl;
 
-    eCost = (10 + C3 / exp(C4 * float(eSupply)) + C6 / (pow(2.0, float(ite))) - isSkeleton * w);
+    eCost = (7 + C3 / exp(C4 * float(eSupply)) + C6 / (pow(2.0, float(ite))) - isSkeleton * w);
     if (eSupply <= 0) {
         PrintRoute2D(line);
         PrintEdgeSupply(graph[line.sIdx.row - 1][max(line.sIdx.col, line.eIdx.col) - 1]);
         return int(kappa * eCost);
     } else {
-        return int(eCost);
+        return int(100 * eCost);
     }
 }
 bool needChange(BLMRgrid stepGrid, int nowCost, int nowLen, bool isBLC) {
-    if (isBLC) {
+    if (stepGrid.isFixed) {
+        return false;
+    } else if (isBLC) {
         if (stepGrid.cost == -1 || !stepGrid.isBLC || stepGrid.cost > nowCost) {
             return true;
         }

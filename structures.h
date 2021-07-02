@@ -61,5 +61,6 @@ struct BLMRgrid {
   int len;
   int cost;
   bool isBLC;
+  bool isFixed;
 };
 #endif
