@@ -39,6 +39,8 @@ struct vertex2d
         pin_layer == a.pin_layer && is_pin == a.is_pin) return true;
         return false;
     }
+
+    void _print(){ printf("(%d,%d) ", row, col); }
 };
 
 struct edge
@@ -75,7 +77,7 @@ struct wire
         e_row = y.row; e_col = y.col; e_layer = y_layer;
     }
 };
-struct net3d{ vector<la_Wire> wires; };
+struct net3d{ vector<la_Wire> wires; int id; };
 struct route{ vector<la_Net3d> nets; };
 
 void _set_vertex(la_Vertex2d *v, int r, int c, int p, bool i, Problem *pro);
@@ -90,9 +92,11 @@ void _net_ordering(vector<la_Net2d> &net2d);
 void _DFS_visit(la_Vertex2d *u, vector<la_Vertex2d*> &dft);
 vector<la_Vertex2d*> _net_preprocessing(la_Net2d net);
 
+int _pow(int x, int y);
 float _minimum_via_cost(la_Vertex2d *v, int layer, int minLay, Problem *p, 
 char *dir, vector<vector<vector<float>>> supply, vector<vector<vector<float>>> demand);
 
+void _quicksort_reordering(vector<la_Net2d> &net, int l, int r);
 void _route_print(la_Route r, Problem *p);
 void _layer_assignment_and_print_route(Problem *p, vector<Net2D> &net);
 

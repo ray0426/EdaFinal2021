@@ -4,6 +4,7 @@
 #include "kruskal.h"
 #include "problem.h"
 #include "rsmtAware.h"
+#include "layerassignment.h"
 #include <string>
 #include <vector>
 using namespace std;
@@ -24,10 +25,11 @@ int main(int argc, char **argv)
     // testH(pro);
 
     vector<Net2D> flattenNet = Three2Two(pro);
+    /*
     vector<vector<GridSupply>> gSupGraph = GenerateGridSupplyGraph(pro);
     vector<vector<GridSupply>> testGSupGraph = gSupGraph;
     // vector<vector<EdgeSupply>> eSupGraph = Grid2EdgeSupply(gSupGraph);
-
+    
     cout << "gridSupply(v,h)" << endl;
     for (auto r : gSupGraph)
     {
@@ -37,7 +39,7 @@ int main(int argc, char **argv)
         }
         cout << endl;
     }
-
+    
     // print(flattenNet[1].pin2Ds);
     // edgeSkeleton = rsmtAware(flattenNet[1].pin2Ds, pro->GGridBD[0],
     //                          pro->GGridBD[2], pro->GGridBD[1],
@@ -139,7 +141,7 @@ int main(int argc, char **argv)
             }
         }
         // evaluate part
-        cout << ite << endl;
+        //cout << ite << endl;
         score = evaluate(gSupGraph, netSets);
         scoreRecord.push_back(score);
         if (nowScore > score)
@@ -149,13 +151,13 @@ int main(int argc, char **argv)
         }
         ite++;
     }
-
+    
     for (auto s : scoreRecord)
     {
         cout << s << "\n";
     }
     cout << endl;
-
+    
     vector<Net2D> flattenNetAns;
     Net2D bufferNet2D;
     vector<Route2D> flattenRoute;
@@ -190,8 +192,16 @@ int main(int argc, char **argv)
         bufferNet2D.route2Ds = flattenRoute;
         flattenNetAns.push_back(bufferNet2D);
     }
+    printf("\n");
+    */
+   for(auto a : flattenNet)
+   {
+       printf("%s\n", a.name);
+       for(auto r : a.route2Ds) printf("(%d,%d)<->(%d,%d)\n", r.sIdx.row, r.sIdx.col, r.eIdx.row, r.eIdx.col);
+   }
 
     // use flattenNetAns to do 3D
+    _layer_assignment_and_print_route(pro, flattenNet);
 
     delete pro;
     return 0;
