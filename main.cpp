@@ -30,15 +30,15 @@ int main(int argc, char **argv)
     vector<vector<GridSupply>> testGSupGraph = gSupGraph;
     // vector<vector<EdgeSupply>> eSupGraph = Grid2EdgeSupply(gSupGraph);
     
-    cout << "gridSupply(v,h)" << endl;
-    for (auto r : gSupGraph)
-    {
-        for (auto g : r)
-        {
-            PrintGridSupply(g);
-        }
-        cout << endl;
-    }
+    //cout << "gridSupply(v,h)" << endl;
+    //for (auto r : gSupGraph)
+    //{
+        //for (auto g : r)
+        //{
+            //PrintGridSupply(g);
+        //}
+        //cout << endl;
+    //}
     
     // print(flattenNet[1].pin2Ds);
     // edgeSkeleton = rsmtAware(flattenNet[1].pin2Ds, pro->GGridBD[0],
@@ -152,11 +152,11 @@ int main(int argc, char **argv)
         ite++;
     }
     
-    for (auto s : scoreRecord)
-    {
-        cout << s << "\n";
-    }
-    cout << endl;
+    //for (auto s : scoreRecord)
+    //{
+        //cout << s << "\n";
+    //}
+    //cout << endl;
     
     vector<Net2D> flattenNetAns;
     Net2D bufferNet2D;

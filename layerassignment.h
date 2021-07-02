@@ -16,12 +16,13 @@ typedef struct route la_Route;
 
 struct vertex2d
 { 
-    int row, col, layer, color, pin_layer; 
+    int row, col, layer, color; 
     bool is_pin; 
     vector<la_Vertex2d*> adjlist;
     la_Vertex2d *parent;
     vector<la_Vertex2d*> child;
     la_Edge *parent_edge;
+    vector<int> pin_layer;
     vector<vector<int>> child_layer;
 
     la_Vertex2d operator=(la_Vertex2d a)
@@ -76,11 +77,12 @@ struct wire
         s_row = x.row; s_col = x.col; s_layer = x_layer;
         e_row = y.row; e_col = y.col; e_layer = y_layer;
     }
+    void _print(){ printf("%d %d %d %d %d %d ", s_row, s_col, s_layer, e_row, e_col, e_layer); }
 };
 struct net3d{ vector<la_Wire> wires; int id; };
 struct route{ vector<la_Net3d> nets; };
 
-void _set_vertex(la_Vertex2d *v, int r, int c, int p, bool i, Problem *pro);
+void _set_vertex(la_Vertex2d *v, int r, int c, vector<int> p, bool i, Problem *pro);
 int _find_id_in_vector(vector<Pos> v, Pos t);
 la_Vertex2d *_find_vertex(vector<la_Vertex2d*> vs, int row, int col);
 
@@ -98,6 +100,8 @@ char *dir, vector<vector<vector<float>>> supply, vector<vector<vector<float>>> d
 
 void _quicksort_reordering(vector<la_Net2d> &net, int l, int r);
 void _route_print(la_Route r, Problem *p);
+bool _is_overlap(la_Wire a, la_Wire b);
+void _wire_compress(vector<la_Wire> &w);
 void _layer_assignment_and_print_route(Problem *p, vector<Net2D> &net);
 
 #endif
