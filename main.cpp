@@ -28,6 +28,11 @@ int main(int argc, char **argv)
     vector<vector<GridSupply>> testGSupGraph = gSupGraph;
     // vector<vector<EdgeSupply>> eSupGraph = Grid2EdgeSupply(gSupGraph);
 
+    for (auto n: flattenNet) {
+        PrintNet2D(n);
+    }
+
+    cout << endl;
     cout << "gridSupply(v,h)" << endl;
     for (auto r : gSupGraph)
     {
@@ -139,7 +144,7 @@ int main(int argc, char **argv)
             }
         }
         // evaluate part
-        cout << ite << endl;
+        // cout << ite << endl;
         score = evaluate(gSupGraph, netSets);
         scoreRecord.push_back(score);
         if (nowScore > score)
@@ -191,6 +196,9 @@ int main(int argc, char **argv)
         flattenNetAns.push_back(bufferNet2D);
     }
 
+    for (auto n: flattenNetAns) {
+        PrintNet2D(n);
+    }
     // use flattenNetAns to do 3D
 
     delete pro;
