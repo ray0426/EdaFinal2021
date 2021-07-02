@@ -25,7 +25,18 @@ int main(int argc, char **argv)
 
     vector<Net2D> flattenNet = Three2Two(pro);
     vector<vector<GridSupply>> gSupGraph = GenerateGridSupplyGraph(pro);
-    vector<vector<EdgeSupply>> eSupGraph = Grid2EdgeSupply(gSupGraph);
+    vector<vector<GridSupply>> testGSupGraph = gSupGraph;
+    // vector<vector<EdgeSupply>> eSupGraph = Grid2EdgeSupply(gSupGraph);
+
+    cout << "gridSupply(v,h)" << endl;
+    for (auto r : gSupGraph)
+    {
+        for (auto g : r)
+        {
+            PrintGridSupply(g);
+        }
+        cout << endl;
+    }
 
     // print(flattenNet[1].pin2Ds);
     // edgeSkeleton = rsmtAware(flattenNet[1].pin2Ds, pro->GGridBD[0],
@@ -58,36 +69,47 @@ int main(int argc, char **argv)
             // cout << "get Route: ";
             // PrintRoute2D(netPin);
             afterRouting(gSupGraph, netRoute, netSet);
+            // cout << "gridSupply(v,h)" << endl;
+            // for (auto r : gSupGraph)
+            // {
+            //     for (auto g : r)
+            //     {
+            //         PrintGridSupply(g);
+            //     }
+            //     cout << endl;
+            // }
             queue.push_back(netRoute);
             // cout << "afterRouting" << endl;
         }
         netSets.push_back(netSet);
-        
     }
 
-    // cout << "gridSupply(v,h)" << endl;
-    // for (auto r : gSupGraph)
-    // {
-    //     for (auto g : r)
-    //     {
-    //         PrintGridSupply(g);
-    //     }
-    //     cout << endl;
-    // }
-
-    
     int ite = 1;
     int nowScore = evaluate(gSupGraph, netSets);
     int score;
+    vector<int> scoreRecord;
+    scoreRecord.push_back(nowScore);
     ans = netSets;
     int reRouteIdx;
-    while (ite < 50)
+    while (ite < 100 && queue.size() != 0)
     {
-        // cout << "sort" << endl;
+        // cout << "reRoute" << endl;
+        // cout << queue.size() << endl;
+
         reRouteIdx = RerouteNet(queue);
-        //     // monotonic
-        SortTaskQueue(queue, gSupGraph); //, reRouteIdx);
-        //     // queue.pop_back();   //if monotonic is do, don't do this
+        // cout << reRouteIdx << endl;
+        for (int k = 0; k < netSets.size(); k++)
+        {
+            if (netSets[k].name == queue[reRouteIdx].name)
+            {
+                Monotonic(gSupGraph, netSets[k], queue[reRouteIdx], ite);
+                // BLMR(gSupGraph, netSets[k], queue[reRouteIdx], ite);
+                break;
+            }
+        }
+        // cout << "sort" << endl;
+        SortTaskQueue(queue, gSupGraph, reRouteIdx);
+        queue.pop_back();                //if monotonic is do, don't do this
         // for (auto q: queue) {
         //     PrintTwoPinNet(q);
         //     cout << endl;
@@ -101,7 +123,7 @@ int main(int argc, char **argv)
                 // cout << netSets[k].name << " " << queue[j].name;
 
                 if (netSets[k].name == queue[j].name)
-                {   // cout << "before\n";
+                { // cout << "before\n";
                     // for(auto n: queue[j].route) {
                     //     PrintRoute2D(n);
                     // }
@@ -119,12 +141,58 @@ int main(int argc, char **argv)
         // evaluate part
         cout << ite << endl;
         score = evaluate(gSupGraph, netSets);
-        if (nowScore > score) {
+        scoreRecord.push_back(score);
+        if (nowScore > score)
+        {
             ans = netSets;
             nowScore = score;
         }
         ite++;
     }
+
+    for (auto s : scoreRecord)
+    {
+        cout << s << "\n";
+    }
+    cout << endl;
+
+    vector<Net2D> flattenNetAns;
+    Net2D bufferNet2D;
+    vector<Route2D> flattenRoute;
+    for (auto nets: netSets) {
+        flattenRoute.clear();
+
+        bufferNet2D.name = nets.name;
+        for (auto ref: flattenNet) {
+            if (ref.name == bufferNet2D.name) {
+                bufferNet2D = ref;
+            }
+        }
+
+        for (auto net: nets.net) {
+            for (auto r: net.route) {
+                flattenRoute.push_back(r);
+            }
+        }
+
+        // for (auto a: nets.usage) {
+        //     for (auto b: a) {
+        //         PrintGridSupply(b);
+        //     }
+        //     cout << endl;
+        // }
+        // cout << endl;
+        // for (auto line:flattenRoute) {
+        //     PrintRoute2D(line);
+        // }
+        
+        MergeNet(flattenRoute);
+        bufferNet2D.route2Ds = flattenRoute;
+        flattenNetAns.push_back(bufferNet2D);
+    }
+
+    // use flattenNetAns to do 3D
+
     delete pro;
     return 0;
 }
@@ -168,7 +236,7 @@ void testH(Problem *pro)
     //}
 
     TwoPinRoute2D TwoPinNet = Multi2TwoPinRoute(flattenNet[0],
-    flattenNet[0].pin2Ds[0], flattenNet[0].pin2Ds[2]);
+                                                flattenNet[0].pin2Ds[0], flattenNet[0].pin2Ds[2]);
     PrintTwoPinNet(TwoPinNet);
 
     // TwoPinRoute2D Net1 = Multi2TwoPinRoute(flattenNet[1], flattenNet[1].pin2Ds[1],
@@ -178,16 +246,16 @@ void testH(Problem *pro)
     // TwoPinRoute2D Net3 = Multi2TwoPinRoute(flattenNet[1], flattenNet[1].pin2Ds[0],
     //                                        flattenNet[1].pin2Ds[1]);
     // vector<TwoPinRoute2D> Nets{Net1, Net2, Net3};
-// 
+    //
     // string name = "N2";
     // TwoPinNets N2 = CreateNetSet(pro, name);
-// 
+    //
     // for (auto n : Nets)
     // {
     //     // PrintTwoPinNet(n);
     //     afterRouting(gSupGraph, n, N2);
     // }
-// 
+    //
     // cout << "gridSupply(v,h)" << endl;
     // for (auto r : gSupGraph)
     // {
@@ -227,12 +295,12 @@ int evaluate(vector<vector<GridSupply>> &graph, vector<TwoPinNets> &netSet)
     int score = 0;
     bool isOverflowed = false;
 
-    cout << "gridSupply(v,h)" << endl;
     for (auto r : graph)
     {
         for (auto g : r)
         {
-            if (g.h < 0 || g.v < 0) {
+            if (g.h < 0 || g.v < 0)
+            {
                 isOverflowed = true;
                 cout << "overflowed ";
                 PrintGridSupply(g);
@@ -257,7 +325,7 @@ int evaluate(vector<vector<GridSupply>> &graph, vector<TwoPinNets> &netSet)
             }
         }
     }
-    cout << "score is :" << score << endl;
-    cout << endl;
+    // cout << "score is :" << score << endl;
+    // cout << endl;
     return isOverflowed ? 10000 : score;
 }

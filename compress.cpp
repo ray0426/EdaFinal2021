@@ -44,12 +44,12 @@ int lineLen (Pos start, Pos end);
 int RerouteNet(vector<TwoPinRoute2D>& twoPinNets);
 int bounding(TwoPinRoute2D net);
 
-void BLMR(vector<vector<GridSupply>> &graph, TwoPinNets &netSet, TwoPinRoute2D &net, int &ite, vector<vector<EdgeS>>& skeleton);
+void BLMR(vector<vector<GridSupply>> &graph, TwoPinNets &netSet, TwoPinRoute2D &net, int &ite);
 int findPath(vector<Pos> &list, vector<vector<BLMRgrid>> &map);
 bool isBLCobtained(int &historyLen, Pos &grid, int &gridLen, Pos &start, Pos &end, int &ite);
 int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<GridSupply>>& usage, int& ite, vector<vector<EdgeS>>& skeleton);
 bool needChange(BLMRgrid stepGrid, int nowCost, int nowLen, bool isBLC);
-TwoPinRoute2D Monotonic();
+void Monotonic(vector<vector<GridSupply>> &graph, TwoPinNets &netSet, TwoPinRoute2D &net, int &ite);
 
 
 
@@ -95,7 +95,7 @@ void PrintGridSupply(GridSupply a) {
 }
 void PrintBLMRgrid(BLMRgrid a) {
     cout << a.cost << " ";
-    PrintPos(a.further);
+    // PrintPos(a.further);
 }
 
 bool isPosSame (Pos& a, Pos& b) {
@@ -309,14 +309,53 @@ TwoPinNets CreateNetSet(Problem* pro, string& name) {
     return a;
 }
 void changeTwoPinNet(TwoPinNets &netSet, TwoPinRoute2D &newNet) {
+
+    
+    // for (auto a: netSet.usage) {
+    //         for (auto b: a) {
+    //             PrintGridSupply(b);
+    //         }
+    //         cout << endl;
+    // }
+    // cout << endl;
+
+    // cout << "clean" << endl;
     for (int i = 0; i < netSet.net.size(); i++) {
         if (isPosSame(netSet.net[i].ePin,newNet.ePin) && isPosSame(netSet.net[i].sPin,newNet.sPin)) {
+            
+            // for (auto line: netSet.net[i].route) {
+            //     PrintRoute2D(line);
+            // }
+            // cout << endl;
+
             changeUsage(netSet.usage, netSet.net[i], false);
             netSet.net.erase(netSet.net.begin() + i);
             break;
         }
     }
+
+    // for (auto a: netSet.usage) {
+    //     for (auto b: a) {
+    //         PrintGridSupply(b);
+    //     }
+    //     cout << endl;
+    // }
+    // cout << endl;
+
+    // cout << "add" << endl;
+    // for (auto line: newNet.route) {
+    //     PrintRoute2D(line);
+    // }
+    // cout << endl;
     changeUsage(netSet.usage, newNet);
+    // for (auto a: netSet.usage) {
+    //     for (auto b: a) {
+    //         PrintGridSupply(b);
+    //     }
+    //     cout << endl;
+    // }
+    // cout << endl;
+
     netSet.net.push_back(newNet);
 }
 void changeUsage(vector<vector<GridSupply>>& usage,TwoPinRoute2D &net, bool add) {
@@ -366,8 +405,8 @@ void changeUsage(vector<vector<GridSupply>>& usage,TwoPinRoute2D &net, bool add)
 }
 
 vector<vector<GridSupply>> GenerateGridSupplyGraph (Problem* pro) {
-    int hSupply;
-    int vSupply;
+    int hSupply = 0;
+    int vSupply = 0;
     int rowBound = pro->GGridBD[2];
     int colBound = pro->GGridBD[3];
     //cout << rowBound << colBound;
@@ -385,6 +424,7 @@ vector<vector<GridSupply>> GenerateGridSupplyGraph (Problem* pro) {
         else if (lay.direction == 'V')
             vSupply += lay.defaultsupply;
     }
+    cout << hSupply << " " << vSupply;
     //assert defaultsupply to grids
     for (int i = 0; i < rowBound; i++) {
         rowGraph.clear();
@@ -693,8 +733,11 @@ int RerouteNet (vector<TwoPinRoute2D>& twoPinNets) {
     int index;
     int currentBounding = -1;
     for (int i = 0; i < twoPinNets.size(); i++) {
+        // PrintTwoPinNet(twoPinNets[i]);
+        // cout << endl;
         if (currentBounding == -1 || bounding(twoPinNets.at(i)) < currentBounding) {
             currentBounding = bounding(twoPinNets.at(i));
+            // cout << index << endl;
             index = i;
         }
     }
@@ -970,4 +1013,21 @@ bool needChange(BLMRgrid stepGrid, int nowCost, int nowLen, bool isBLC) {
         }
     }
     return false;
+}
+void Monotonic(vector<vector<GridSupply>> &graph, TwoPinNets &netSet, TwoPinRoute2D &net, int &ite) {
+    vector<Route2D> route;
+    Route2D line;
+
+    line.sIdx = net.sPin;
+    line.eIdx.row = net.sPin.row;
+    line.eIdx.col = net.ePin.col;
+    route.push_back(line);
+
+    line.eIdx = net.ePin;
+    line.sIdx.row = net.sPin.row;
+    line.sIdx.col = net.ePin.col;
+    route.push_back(line);
+
+    net.route = route;
+    afterRouting(graph, net, netSet);
 }

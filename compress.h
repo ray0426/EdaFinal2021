@@ -38,4 +38,5 @@ void SortTaskQueue(vector<TwoPinRoute2D> &twoPinNets,
 int RerouteNet(vector<TwoPinRoute2D> &twoPinNets);
 void BLMR(vector<vector<GridSupply>> &graph, TwoPinNets &netSet,
           TwoPinRoute2D &net, int &ite);
+void Monotonic(vector<vector<GridSupply>> &graph, TwoPinNets &netSet, TwoPinRoute2D &net, int &ite);
 #endif
