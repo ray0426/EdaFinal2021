@@ -6,6 +6,8 @@
 #include "rsmtAware.h"
 #include <algorithm>
 #include <math.h>
+#include <cstdlib> 
+#include <ctime>   
 using namespace std;
 
 void PrintPos(Pos a);
@@ -736,10 +738,21 @@ int RerouteNet (vector<TwoPinRoute2D>& twoPinNets, vector<TwoPinRoute2D>& reRout
     //return the data location of most needing rerouting net
     int index;
     int currentBounding = -1;
+    bool isReRouted;
     for (int i = 0; i < twoPinNets.size(); i++) {
+        isReRouted = false;
         // PrintTwoPinNet(twoPinNets[i]);
         // cout << endl;
         if (currentBounding == -1 || bounding(twoPinNets.at(i)) < currentBounding) {
+            for (auto r: reRouted) {
+                if (isPosSame(r.sPin, twoPinNets[i].sPin) && isPosSame(r.ePin, twoPinNets[i].ePin) && r.name == twoPinNets[i].name) {
+                    isReRouted = true;
+                    break;
+                }
+            }
+            if (isReRouted) {
+                continue;
+            }
             currentBounding = bounding(twoPinNets.at(i));
             // cout << index << endl;
             index = i;
@@ -1019,18 +1032,72 @@ bool needChange(BLMRgrid stepGrid, int nowCost, int nowLen, bool isBLC) {
     return false;
 }
 void Monotonic(vector<vector<GridSupply>> &graph, TwoPinNets &netSet, TwoPinRoute2D &net, int &ite) {
+    int tester = 2;
     vector<Route2D> route;
     Route2D line;
+    int x;
+    int dis;
+    // PrintPos(net.sPin);
+    // PrintPos(net.ePin);
+    // cout << endl;
+    Pos s = net.sPin;
+    if (tester == 1) {
+        while (!isPosSame(s,net.ePin)) {
+            srand( time(NULL) );
+            x = rand();
+            dis = lineLen(s, net.ePin);
+            // cout << dis << " ";
+            // cout << abs(s.row - net.ePin.row) << endl;
+            if (x % dis < abs(s.row - net.ePin.row)) {
+                if (s.row < net.ePin.row) {
+                    line.sIdx = s;
+                    line.eIdx.col = s.col;
+                    line.eIdx.row = s.row + 1;
+                    route.push_back(line);
+                } else {
+                    line.sIdx = s;
+                    line.eIdx.col = s.col;
+                    line.eIdx.row = s.row - 1;
+                    route.push_back(line);
+                }
+            } else {
+                if (s.col < net.ePin.col) {
+                    line.sIdx = s;
+                    line.eIdx.col = s.col + 1;
+                    line.eIdx.row = s.row;
+                    route.push_back(line);
+                } else {
+                    line.sIdx = s;
+                    line.eIdx.col = s.col - 1;
+                    line.eIdx.row = s.row;
+                    route.push_back(line);
+                }
+            }
+            s = line.eIdx;
+        }
+        MergeNet(route);
+    }
 
-    line.sIdx = net.sPin;
-    line.eIdx.row = net.ePin.row;
-    line.eIdx.col = net.sPin.col;
-    route.push_back(line);
 
-    line.eIdx = net.ePin;
-    line.sIdx.row = net.ePin.row;
-    line.sIdx.col = net.sPin.col;
-    route.push_back(line);
+    // cout << route.size() << endl;
+    // for (auto r: route) {
+    //     PrintRoute2D(r);
+    // }
+    // cout << endl;
+
+    // Lshape
+    if (tester == 2) {
+        line.sIdx = net.sPin;
+        line.eIdx.row = net.ePin.row;
+        line.eIdx.col = net.sPin.col;
+        route.push_back(line);
+    
+        line.eIdx = net.ePin;
+        line.sIdx.row = net.ePin.row;
+        line.sIdx.col = net.sPin.col;
+        route.push_back(line);
+    }
+
 
     net.route = route;
     afterRouting(graph, net, netSet);
