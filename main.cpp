@@ -10,7 +10,7 @@
 using namespace std;
 
 void testH(Problem *pro);
-int evaluate(vector<vector<GridSupply>> &graph, vector<TwoPinNets> &netSet);
+float evaluate(vector<vector<GridSupply>> &graph, vector<TwoPinNets> &netSet);
 int main(int argc, char **argv)
 {
     vector<vector<EdgeS>> edgeSkeleton;
@@ -45,7 +45,8 @@ int main(int argc, char **argv)
     //                          pro->GGridBD[2], pro->GGridBD[1],
     //                          pro->GGridBD[3]);
     vector<TwoPinNets> netSets;
-    vector<TwoPinNets> ans;
+    vector<vector<TwoPinNets>> ans;
+    // vector<TwoPinNets> ans;
     TwoPinNets netSet;
     vector<TwoPinRoute2D> queue;
     vector<Route2D> netPins;
@@ -88,10 +89,10 @@ int main(int argc, char **argv)
 
     int ite = 1;
     int nowScore = evaluate(gSupGraph, netSets);
-    int score;
+    float score;
     vector<int> scoreRecord;
     scoreRecord.push_back(nowScore);
-    ans = netSets;
+    ans.push_back(netSets);
     int reRouteIdx;
     while (ite < 100 && queue.size() != 0)
     {
@@ -141,13 +142,16 @@ int main(int argc, char **argv)
             }
         }
         // evaluate part
-        //cout << ite << endl;
+        // cout << ite << endl;
         score = evaluate(gSupGraph, netSets);
         scoreRecord.push_back(score);
         if (nowScore > score)
         {
-            ans = netSets;
+            ans.clear();
+            ans.push_back(netSets);
             nowScore = score;
+        } else if (nowScore == score) {
+            ans.push_back(netSets);
         }
         ite++;
     }
@@ -158,44 +162,51 @@ int main(int argc, char **argv)
     //}
     //cout << endl;
     
+    vector<vector<Net2D>> flattenNetAnss;
     vector<Net2D> flattenNetAns;
     Net2D bufferNet2D;
     vector<Route2D> flattenRoute;
-    for (auto nets: netSets) {
-        flattenRoute.clear();
+    for (auto possibleAns: ans) {
+        flattenNetAns.clear();
+        for (auto nets: possibleAns) {
+            flattenRoute.clear();
 
-        bufferNet2D.name = nets.name;
-        for (auto ref: flattenNet) {
-            if (ref.name == bufferNet2D.name) {
-                bufferNet2D = ref;
+            bufferNet2D.name = nets.name;
+            for (auto ref: flattenNet) {
+                if (ref.name == bufferNet2D.name) {
+                    bufferNet2D = ref;
+                }
             }
-        }
 
-        for (auto net: nets.net) {
-            for (auto r: net.route) {
-                flattenRoute.push_back(r);
+            for (auto net: nets.net) {
+                for (auto r: net.route) {
+                    flattenRoute.push_back(r);
+                }
             }
-        }
 
-        // for (auto a: nets.usage) {
-        //     for (auto b: a) {
-        //         PrintGridSupply(b);
-        //     }
-        //     cout << endl;
-        // }
-        // cout << endl;
-        // for (auto line:flattenRoute) {
-        //     PrintRoute2D(line);
-        // }
-        
-        MergeNet(flattenRoute);
-        bufferNet2D.route2Ds = flattenRoute;
-        flattenNetAns.push_back(bufferNet2D);
+            // cout << nets.name;
+            // for (auto a: nets.usage) {
+            //     for (auto b: a) {
+            //         PrintGridSupply(b);
+            //     }
+            //     cout << endl;
+            // }
+
+            MergeNet(flattenRoute);
+            // cout << endl;
+            // for (auto line:flattenRoute) {
+            //     PrintRoute2D(line);
+            // }
+            bufferNet2D.route2Ds = flattenRoute;
+
+            flattenNetAns.push_back(bufferNet2D);
+        }
+        flattenNetAnss.push_back(flattenNetAns);
     }
     printf("\n");
     
 
-    // use flattenNetAns to do 3D
+    // go through a for
     _layer_assignment_and_print_route(pro, flattenNetAns);
 
     delete pro;
@@ -294,10 +305,10 @@ void testH(Problem *pro)
     //    PrintTwoPinNet(n);
     //}
 }
-int evaluate(vector<vector<GridSupply>> &graph, vector<TwoPinNets> &netSet)
+float evaluate(vector<vector<GridSupply>> &graph, vector<TwoPinNets> &netSet)
 {
     vector<Route2D> multiPinNet;
-    int score = 0;
+    float score = 0.0;
     bool isOverflowed = false;
 
     for (auto r : graph)
@@ -326,11 +337,11 @@ int evaluate(vector<vector<GridSupply>> &graph, vector<TwoPinNets> &netSet)
             MergeNet(multiPinNet);
             for (auto line : multiPinNet)
             {
-                score += lineLen(line.sIdx, line.eIdx) * n.weight;
+                score += float(lineLen(line.sIdx, line.eIdx)) * n.weight;
             }
         }
     }
     // cout << "score is :" << score << endl;
     // cout << endl;
-    return isOverflowed ? 10000 : score;
+    return isOverflowed ? 10000.0 : score;
 }

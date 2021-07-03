@@ -1023,13 +1023,13 @@ void Monotonic(vector<vector<GridSupply>> &graph, TwoPinNets &netSet, TwoPinRout
     Route2D line;
 
     line.sIdx = net.sPin;
-    line.eIdx.row = net.sPin.row;
-    line.eIdx.col = net.ePin.col;
+    line.eIdx.row = net.ePin.row;
+    line.eIdx.col = net.sPin.col;
     route.push_back(line);
 
     line.eIdx = net.ePin;
-    line.sIdx.row = net.sPin.row;
-    line.sIdx.col = net.ePin.col;
+    line.sIdx.row = net.ePin.row;
+    line.sIdx.col = net.sPin.col;
     route.push_back(line);
 
     net.route = route;

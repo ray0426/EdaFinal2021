@@ -5,7 +5,7 @@ NC='\033[0m' # No Color
 LightGreen='\033[1;32m'
 
 echo -e "${LightGreen}start compile${NC}"
-g++ -o main.out problem.cpp compress.cpp main.cpp rsmtAware.cpp flute.cpp kruskal.cpp
+g++ -o main.out problem.cpp compress.cpp main.cpp rsmtAware.cpp flute.cpp kruskal.cpp layerassignment.cpp
 echo $?
 if [ "$?" -ne 0 ]; # $rc not equal to zero
 then
@@ -14,6 +14,6 @@ else
     echo -e "${LightGreen}compile complete${NC}"
     echo -e "${LightGreen}start execute${NC}"
     echo -e "================================================================"
-    ./main.out ./benchmark/case1.txt output.txt
+    ./main.out ./benchmark/case2.txt output.txt
     echo -e "================================================================"
 fi
