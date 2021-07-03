@@ -14,6 +14,6 @@ else
     echo -e "${LightGreen}compile complete${NC}"
     echo -e "${LightGreen}start execute${NC}"
     echo -e "================================================================"
-    ./main.out ./benchmark/case2.txt output.txt
+    ./main.out ./benchmark/case1.txt output.txt
     echo -e "================================================================"
 fi

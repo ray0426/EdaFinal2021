@@ -5,6 +5,7 @@
 #include "problem.h"
 #include "rsmtAware.h"
 #include "layerassignment.h"
+#include <math.h>
 #include <string>
 #include <vector>
 using namespace std;
@@ -25,25 +26,20 @@ int main(int argc, char **argv)
     // testH(pro);
 
     vector<Net2D> flattenNet = Three2Two(pro);
-    
+
     vector<vector<GridSupply>> gSupGraph = GenerateGridSupplyGraph(pro);
     vector<vector<GridSupply>> testGSupGraph = gSupGraph;
-    // vector<vector<EdgeSupply>> eSupGraph = Grid2EdgeSupply(gSupGraph);
-    
+
     //cout << "gridSupply(v,h)" << endl;
     //for (auto r : gSupGraph)
     //{
-        //for (auto g : r)
-        //{
-            //PrintGridSupply(g);
-        //}
-        //cout << endl;
+    //for (auto g : r)
+    //{
+    //PrintGridSupply(g);
     //}
-    
-    // print(flattenNet[1].pin2Ds);
-    // edgeSkeleton = rsmtAware(flattenNet[1].pin2Ds, pro->GGridBD[0],
-    //                          pro->GGridBD[2], pro->GGridBD[1],
-    //                          pro->GGridBD[3]);
+    //cout << endl;
+    //}
+
     vector<TwoPinNets> netSets;
     vector<vector<TwoPinNets>> ans;
     // vector<TwoPinNets> ans;
@@ -62,8 +58,7 @@ int main(int argc, char **argv)
         netSet.skeleton = rsmtAware(net.pin2Ds, pro->GGridBD[0], pro->GGridBD[2],
                                     pro->GGridBD[1], pro->GGridBD[3]);
         // cout << "skeleton created" << endl;
-        // make two Pins, gen route, put into queue
-        // cout << "rsmt ";
+
         netPins = decomposition(net.pin2Ds);
         // cout << "decompose" << endl;
         for (auto netPin : netPins)
@@ -88,18 +83,26 @@ int main(int argc, char **argv)
     }
 
     int ite = 1;
+    bool needBLMR = true;
     int nowScore = evaluate(gSupGraph, netSets);
     float score;
-    vector<int> scoreRecord;
+    vector<float> scoreRecord;
+    vector<TwoPinRoute2D> reRouted;
     scoreRecord.push_back(nowScore);
     ans.push_back(netSets);
     int reRouteIdx;
+
     while (ite < 100 && queue.size() != 0)
     {
         // cout << "reRoute" << endl;
         // cout << queue.size() << endl;
 
-        reRouteIdx = RerouteNet(queue);
+        reRouteIdx = RerouteNet(queue, reRouted);
+        reRouted.push_back(queue[reRouteIdx]);
+        if (ite > queue.size() / 2)
+        {
+            reRouted.pop_back();
+        }
         // cout << reRouteIdx << endl;
         for (int k = 0; k < netSets.size(); k++)
         {
@@ -112,7 +115,7 @@ int main(int argc, char **argv)
         }
         // cout << "sort" << endl;
         SortTaskQueue(queue, gSupGraph, reRouteIdx);
-        queue.pop_back();                //if monotonic is do, don't do this
+        // queue.pop_back();                //if monotonic is do, don't do this
         // for (auto q: queue) {
         //     PrintTwoPinNet(q);
         //     cout << endl;
@@ -120,7 +123,20 @@ int main(int argc, char **argv)
         // cout << "BLMR" << endl;
         for (int j = 0; j < queue.size(); j++)
         {
-            // cout << j << endl;
+            needBLMR = true;
+            for (int k = 0; k < reRouted.size() / 2; k++)
+            {
+                if (isPosSame(reRouted[k].sPin, queue[j].sPin) && isPosSame(reRouted[k].ePin, queue[j].ePin) && reRouted[k].name == queue[j].name)
+                {
+                    needBLMR = false;
+                    break;
+                }
+            }
+            if (!needBLMR)
+            {
+                continue;
+            }
+
             for (int k = 0; k < netSets.size(); k++)
             {
                 // cout << netSets[k].name << " " << queue[j].name;
@@ -150,36 +166,44 @@ int main(int argc, char **argv)
             ans.clear();
             ans.push_back(netSets);
             nowScore = score;
-        } else if (nowScore == score) {
+        }
+        else if (nowScore == score)
+        {
             ans.push_back(netSets);
         }
         ite++;
     }
-    
-    //for (auto s : scoreRecord)
-    //{
-        //cout << s << "\n";
-    //}
-    //cout << endl;
-    
+
+    for (auto s : scoreRecord)
+    {
+        cout << s << "\n";
+    }
+    cout << endl;
+
     vector<vector<Net2D>> flattenNetAnss;
     vector<Net2D> flattenNetAns;
     Net2D bufferNet2D;
     vector<Route2D> flattenRoute;
-    for (auto possibleAns: ans) {
+    for (auto possibleAns : ans)
+    {
         flattenNetAns.clear();
-        for (auto nets: possibleAns) {
+        for (auto nets : possibleAns)
+        {
             flattenRoute.clear();
 
             bufferNet2D.name = nets.name;
-            for (auto ref: flattenNet) {
-                if (ref.name == bufferNet2D.name) {
+            for (auto ref : flattenNet)
+            {
+                if (ref.name == bufferNet2D.name)
+                {
                     bufferNet2D = ref;
                 }
             }
 
-            for (auto net: nets.net) {
-                for (auto r: net.route) {
+            for (auto net : nets.net)
+            {
+                for (auto r : net.route)
+                {
                     flattenRoute.push_back(r);
                 }
             }
@@ -203,8 +227,64 @@ int main(int argc, char **argv)
         }
         flattenNetAnss.push_back(flattenNetAns);
     }
+
+    vector<Net2D> twoPin;
+    for (auto n : flattenNetAnss[0])
+    {
+        if (n.pin2Ds.size() == 2)
+        {
+
+            twoPin.push_back(n);
+        }
+    }
+
+    vector<Net2D> ansBuffer;
+    Route2D line;
+    int j;
+    for (int k = 0; k < pow(2.0, twoPin.size()); k++) {
+        ansBuffer.clear();
+        j = k;
+        for (int i = 0; i < twoPin.size(); i++) {
+            twoPin[i].route2Ds.clear();
+            if (j % 2 == 0) {
+                line.sIdx = twoPin[i].pin2Ds[0];
+                line.eIdx.row = twoPin[i].pin2Ds[1].row;
+                line.eIdx.col = twoPin[i].pin2Ds[0].col;
+                twoPin[i].route2Ds.push_back(line);
+
+                line.eIdx = twoPin[i].pin2Ds[1];
+                line.sIdx.row = twoPin[i].pin2Ds[1].row;
+                line.sIdx.col = twoPin[i].pin2Ds[0].col;
+                twoPin[i].route2Ds.push_back(line);
+            } else {
+                line.sIdx = twoPin[i].pin2Ds[0];
+                line.eIdx.row = twoPin[i].pin2Ds[0].row;
+                line.eIdx.col = twoPin[i].pin2Ds[1].col;
+                twoPin[i].route2Ds.push_back(line);
+
+                line.eIdx = twoPin[i].pin2Ds[1];
+                line.sIdx.row = twoPin[i].pin2Ds[0].row;
+                line.sIdx.col = twoPin[i].pin2Ds[1].col;
+                twoPin[i].route2Ds.push_back(line);
+            }
+            j = j / 2;
+        }
+        for (auto n: flattenNetAnss[0]) {
+            if (n.pin2Ds.size() != 2) {
+                ansBuffer.push_back(n);
+            } else {
+                for (auto m: twoPin) {
+                    if (m.name == n.name) {
+                        ansBuffer.push_back(m);
+                        break;
+                    }
+                }
+            }
+        }
+        flattenNetAnss.push_back(ansBuffer);
+    }
+
     printf("\n");
-    
 
     // go through a for
     _layer_assignment_and_print_route(pro, flattenNetAns);

@@ -41,7 +41,7 @@ void FindRouteRaw(vector<Route2D> *route, vector<Route2D> &ref, Pos sPin, Pos eP
 void SortTaskQueue(vector<TwoPinRoute2D> &twoPinNets, vector<vector<GridSupply>> &graph, int chosen);
 int score(TwoPinRoute2D twoPinNet, vector<vector<GridSupply>> *graph);
 int lineLen (Pos start, Pos end);
-int RerouteNet(vector<TwoPinRoute2D>& twoPinNets);
+int RerouteNet(vector<TwoPinRoute2D>& twoPinNets, vector<TwoPinRoute2D>& reRouted);
 int bounding(TwoPinRoute2D net);
 
 void BLMR(vector<vector<GridSupply>> &graph, TwoPinNets &netSet, TwoPinRoute2D &net, int &ite);
@@ -732,7 +732,7 @@ int score(TwoPinRoute2D twoPinNet, vector<vector<GridSupply>>* graph) {
 int lineLen (Pos start, Pos end) {
     return abs(start.row - end.row) + abs(start.col - end.col);
 }
-int RerouteNet (vector<TwoPinRoute2D>& twoPinNets) {
+int RerouteNet (vector<TwoPinRoute2D>& twoPinNets, vector<TwoPinRoute2D>& reRouted) {
     //return the data location of most needing rerouting net
     int index;
     int currentBounding = -1;
