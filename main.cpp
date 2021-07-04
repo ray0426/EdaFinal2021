@@ -91,40 +91,39 @@ int main(int argc, char **argv)
     scoreRecord.push_back(nowScore);
     ans.push_back(netSets);
     int reRouteIdx;
+    float reRouteRatio = 0.5;
+    float BLMRRatio = 0.5;
 
-    while (ite < 100 && queue.size() != 0)
+    while (ite < 30 && queue.size() != 0)
     {
         // cout << "reRoute" << endl;
         // cout << queue.size() << endl;
 
         reRouteIdx = RerouteNet(queue, reRouted);
         reRouted.push_back(queue[reRouteIdx]);
-        if (ite > queue.size() / 2)
+        if (ite > queue.size()*reRouteRatio)
         {
-            reRouted.pop_back();
+            reRouted.erase(reRouted.begin());
         }
         // cout << reRouteIdx << endl;
+        // cout << reRouted.size() << endl;
         for (int k = 0; k < netSets.size(); k++)
         {
             if (netSets[k].name == queue[reRouteIdx].name)
             {
-                // Monotonic(gSupGraph, netSets[k], queue[reRouteIdx], ite);
-                BLMR(gSupGraph, netSets[k], queue[reRouteIdx], ite);
+                Monotonic(gSupGraph, netSets[k], queue[reRouteIdx], ite);
+                // BLMR(gSupGraph, netSets[k], queue[reRouteIdx], ite);
                 break;
             }
         }
         // cout << "sort" << endl;
         SortTaskQueue(queue, gSupGraph, reRouteIdx);
-        // queue.pop_back();                //if monotonic is do, don't do this
-        // for (auto q: queue) {
-        //     PrintTwoPinNet(q);
-        //     cout << endl;
-        // }
+        // queue.pop_back();               
         // cout << "BLMR" << endl;
         for (int j = 0; j < queue.size(); j++)
         {
             needBLMR = true;
-            for (int k = 0; k < reRouted.size() / 2; k++)
+            for (int k = 0; k < reRouted.size()*BLMRRatio; k++)
             {
                 if (isPosSame(reRouted[k].sPin, queue[j].sPin) && isPosSame(reRouted[k].ePin, queue[j].ePin) && reRouted[k].name == queue[j].name)
                 {
@@ -132,6 +131,7 @@ int main(int argc, char **argv)
                     break;
                 }
             }
+
             if (!needBLMR)
             {
                 continue;
@@ -228,6 +228,7 @@ int main(int argc, char **argv)
         flattenNetAnss.push_back(flattenNetAns);
     }
 
+    // cout << "find two pin" << endl;
     vector<Net2D> twoPin;
     for (auto n : flattenNetAnss[0])
     {
@@ -236,6 +237,8 @@ int main(int argc, char **argv)
             twoPin.push_back(n);
         }
     }
+
+    // cout << "store ans" << endl;
 
     vector<Net2D> ansBuffer;
     Route2D line;
