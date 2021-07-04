@@ -292,7 +292,7 @@ int main(int argc, char **argv)
     }
 
     // go through a for
-    double min = -1.0; la_Route *min_r = new la_Route;
+    double min = -1.0; la_Route *min_r = new la_Route; int min_id;
     for(int i = 0; i < flattenNetAnss.size(); i++)
     {
         la_Route *r = _layer_assignment(pro, flattenNetAnss.at(i));
@@ -301,12 +301,24 @@ int main(int argc, char **argv)
         {
             min = score;
             min_r = r;
+            min_id = i;
         }
     }
+    /*
+    for(int i = 0; i < 10; i++)
+    {
+        printf("\nID:%d\n", i+1);
+        for(auto a : flattenNetAnss.at(i)) PrintNet2D(a);
+        //vector<la_Net2d> net2d;
+        //net2d = _transform(flattenNetAnss.at(i), pro);
+        //for(auto n : net2d) n._printf();
+    }
+    */
+    
 
     printf("-----------------------\n");
     _route_print(min_r, pro);
-    printf("score:%llf\n", min);
+    //printf("id:%d\nscore:%llf\n", min_id, min);
 
     delete pro;
     return 0;
