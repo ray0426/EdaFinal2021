@@ -284,12 +284,12 @@ void _quicksort_id(vector<la_Net3d> &net, int l, int r)
     _quicksort_id(net, i+1, r);
 }
 
-void _route_print(la_Route r, Problem *p)
+void _route_print(la_Route *r, Problem *p)
 {
     int n_route = 0;
-    for(auto n : r.nets) n_route += n.wires.size();
+    for(auto n : r->nets) n_route += n.wires.size();
     printf("NumMovedCellInst 0\nNumRoutes %d\n", n_route);
-    for(auto n : r.nets)
+    for(auto n : r->nets)
     {
         for(auto w : n.wires)
         {
@@ -346,8 +346,7 @@ void _wire_compress(vector<la_Wire> &w)
     }
 }
 
-
-void _layer_assignment_and_print_route(Problem *p, vector<Net2D> &net)
+la_Route *_layer_assignment(Problem *p, vector<Net2D> &net)
 {
     vector<la_Net2d> net2d;
     net2d = _transform(net, p);
@@ -389,7 +388,7 @@ void _layer_assignment_and_print_route(Problem *p, vector<Net2D> &net)
     for(int i = 0; i < p->NumLayer; i++) dir[i] = p->layers.at(i).direction;
 
     //assignment
-    la_Route r;
+    la_Route *r = new la_Route;
     vector<la_Vertex2d*> dft;
     for(auto a : net2d)
     {
@@ -565,10 +564,32 @@ void _layer_assignment_and_print_route(Problem *p, vector<Net2D> &net)
             }
         }
         _wire_compress(net_3d.wires);
-        r.nets.push_back(net_3d);
+        r->nets.push_back(net_3d);
     }
-    _quicksort_id(r.nets, 0, r.nets.size()-1);
+    _quicksort_id(r->nets, 0, r->nets.size()-1);
+    return r;
+}
 
-    // print route
-    _route_print(r, p);
+double _route_score(Problem *pro, la_Route *r)
+{
+    double score = 0.0;
+    for(auto n : r->nets)
+    {
+        double s = 0.0;
+        for(auto w : n.wires)
+        {
+            if(w.s_layer < w.e_layer)
+            {
+                for(int i = w.s_layer; i <= w.e_layer; i++) s += (double)pro->layers.at(i-1).powerfac;
+            }
+            else if(w.s_layer > w.e_layer)
+            {
+                for(int i = w.e_layer; i <= w.s_layer; i++) s += (double)pro->layers.at(i-1).powerfac;
+            }
+            else if(w.s_row != w.e_row) s += (double)abs(w.s_row-w.e_row+1)*(double)pro->layers.at(w.s_layer-1).powerfac;
+            else if(w.s_col != w.e_col) s += (double)abs(w.s_col-w.e_col+1)*(double)pro->layers.at(w.s_layer-1).powerfac;
+        }
+        score += s*(double)pro->nets.at(n.id-1).weight;
+    }
+    return score;
 }

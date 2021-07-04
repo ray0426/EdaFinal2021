@@ -176,13 +176,14 @@ int main(int argc, char **argv)
         ite++;
     }
 
+
     ans.push_back(origin);
     
-    for (auto s : scoreRecord)
-    {
-        cout << s << "\n";
-    }
-    cout << endl;
+    //for (auto s : scoreRecord)
+    //{
+        //cout << s << "\n";
+    //}
+    //cout << endl;
 
     vector<vector<Net2D>> flattenNetAnss;
     vector<Net2D> flattenNetAns;
@@ -238,7 +239,6 @@ int main(int argc, char **argv)
     {
         if (n.pin2Ds.size() == 2)
         {
-
             twoPin.push_back(n);
         }
     }
@@ -291,10 +291,22 @@ int main(int argc, char **argv)
         flattenNetAnss.push_back(ansBuffer);
     }
 
-    printf("\n");
-
     // go through a for
-    _layer_assignment_and_print_route(pro, flattenNetAns);
+    double min = -1.0; la_Route *min_r = new la_Route;
+    for(int i = 0; i < flattenNetAnss.size(); i++)
+    {
+        la_Route *r = _layer_assignment(pro, flattenNetAnss.at(i));
+        double score = _route_score(pro, r);
+        if(min == -1.0 || min > score)
+        {
+            min = score;
+            min_r = r;
+        }
+    }
+
+    printf("-----------------------\n");
+    _route_print(min_r, pro);
+    printf("score:%llf\n", min);
 
     delete pro;
     return 0;
