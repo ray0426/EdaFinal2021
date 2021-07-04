@@ -749,12 +749,12 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
     while (true) { //do until mapIdx == end
         //find grid with less cost
         // cout << "s" << endl;
-        for (auto k: BLMRmap) {
-            for (auto q: k) {
-                PrintBLMRgrid(q);
-            }
-            // cout << endl;
-        }
+        // for (auto k: BLMRmap) {
+        //     for (auto q: k) {
+        //         PrintBLMRgrid(q);
+        //     }
+        //     // cout << endl;
+        // }
         // cout << endl;
         needIdx = findPath(need,BLMRmap);
         // cout << need.size() << endl;
@@ -769,7 +769,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
         BLMRmap[mapIdx.row - 1][mapIdx.col - 1].isFixed = true;
         grid = BLMRmap[mapIdx.row - 1][mapIdx.col - 1];
         isBLC = isBLCobtained(oldLen, mapIdx, grid.len, start, end, ite);
-        PrintPos(mapIdx);
+        // PrintPos(mapIdx);
         // cout << supplyG.size() << endl;
         // cout << supplyG[0].size() << endl;
         // cout << "upper" << endl;
@@ -916,8 +916,8 @@ int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<G
 
     eCost = (10 + C3 / exp(C4 * float(eSupply)) + C6 / (pow(2.0, float(ite))) - isSkeleton * w);
     if (eSupply <= 0) {
-        PrintRoute2D(line);
-        PrintEdgeSupply(graph[line.sIdx.row - 1][max(line.sIdx.col, line.eIdx.col) - 1]);
+        // PrintRoute2D(line);
+        // PrintEdgeSupply(graph[line.sIdx.row - 1][max(line.sIdx.col, line.eIdx.col) - 1]);
         return int(kappa * eCost);
     } else {
         return int(100 * eCost);
