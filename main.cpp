@@ -142,7 +142,7 @@ int main(int argc, char **argv)
             {
                 continue;
             }
-            cout << "b" << endl;
+            // cout << "b" << endl;
             for (int k = 0; k < netSets.size(); k++)
             {
                 // cout << netSets[k].name << " " << queue[j].name;
