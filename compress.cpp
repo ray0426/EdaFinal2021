@@ -909,7 +909,7 @@ int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<G
         }
     }
 
-    eCost = (7 + C3 / exp(C4 * float(eSupply)) + C6 / (pow(2.0, float(ite))) - isSkeleton * w);
+    eCost = (10 + C3 / exp(C4 * float(eSupply)) + C6 / (pow(2.0, float(ite))) - isSkeleton * w);
     if (eSupply <= 0) {
         PrintRoute2D(line);
         PrintEdgeSupply(graph[line.sIdx.row - 1][max(line.sIdx.col, line.eIdx.col) - 1]);
