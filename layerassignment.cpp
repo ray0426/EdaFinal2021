@@ -260,7 +260,7 @@ char *dir, vector<vector<vector<float>>> supply, vector<vector<vector<float>>> d
             child_layer.push_back(l+1);
         }
         if(c == -1) continue; 
-        c += *max_element(vc.begin(), vc.end())-*min_element(vc.begin(), vc.end());
+        c += (*max_element(vc.begin(), vc.end())-*min_element(vc.begin(), vc.end()))*2.0;
         if(c < mvc){ mvc = c; v->child_layer.at(layer) = child_layer; }
     }
     return mvc;
@@ -570,26 +570,57 @@ la_Route *_layer_assignment(Problem *p, vector<Net2D> &net)
     return r;
 }
 
-double _route_score(Problem *pro, la_Route *r)
+double _route_score(Problem *p, la_Route *r)
 {
     double score = 0.0;
+    int numrow = p->GGridBD[2]-p->GGridBD[0]+1, numcol = p->GGridBD[3]-p->GGridBD[1]+1;
+    vector<vector<vector<bool>>> is_use(numrow+1, vector<vector<bool>>(numcol+1, vector<bool>(p->NumLayer+1)));
     for(auto n : r->nets)
     {
-        double s = 0.0;
+        for(int i = 1; i <= numrow; i++)
+        {
+            for(int j = 1; j <= numcol; j++)
+            {
+                for(int k = 1; k <= p->NumLayer; k++) is_use.at(i).at(j).at(k) = false;
+            }
+        }
         for(auto w : n.wires)
         {
-            if(w.s_layer < w.e_layer)
+            if(w.s_row < w.e_row)
             {
-                for(int i = w.s_layer; i <= w.e_layer; i++) s += (double)pro->layers.at(i-1).powerfac;
+                for(int i = w.s_row; i <= w.e_row; i++) is_use.at(i).at(w.s_col).at(w.s_layer) = true;
+            }
+            else if(w.s_row > w.e_row)
+            {
+                for(int i = w.e_row; i <= w.s_row; i++) is_use.at(i).at(w.s_col).at(w.s_layer) = true;
+            }
+            else if(w.s_col < w.e_col)
+            {
+                for(int i = w.s_col; i <= w.e_col; i++) is_use.at(w.s_row).at(i).at(w.s_layer) = true;
+            }
+            else if(w.s_col > w.e_col)
+            {
+                for(int i = w.e_col; i <= w.s_col; i++) is_use.at(w.s_row).at(i).at(w.s_layer) = true;
+            }
+            else if(w.s_layer < w.e_layer)
+            {
+                for(int i = w.s_layer; i <= w.e_layer; i++) is_use.at(w.s_row).at(w.s_col).at(i) = true;
             }
             else if(w.s_layer > w.e_layer)
             {
-                for(int i = w.e_layer; i <= w.s_layer; i++) s += (double)pro->layers.at(i-1).powerfac;
+                for(int i = w.e_layer; i <= w.s_layer; i++) is_use.at(w.s_row).at(w.s_col).at(i) = true;
             }
-            else if(w.s_row != w.e_row) s += (double)abs(w.s_row-w.e_row+1)*(double)pro->layers.at(w.s_layer-1).powerfac;
-            else if(w.s_col != w.e_col) s += (double)abs(w.s_col-w.e_col+1)*(double)pro->layers.at(w.s_layer-1).powerfac;
         }
-        score += s*(double)pro->nets.at(n.id-1).weight;
+        for(int k = 1; k <= p->NumLayer; k++)
+        {
+            for(int i = 1; i <= numrow; i++)
+            {
+                for(int j = 1; j <= numcol; j++)
+                {
+                    if(is_use.at(i).at(j).at(k)) score += (double)p->layers.at(k-1).powerfac*(double)p->nets.at(n.id-1).weight;
+                }
+            }
+        }
     }
     return score;
 }

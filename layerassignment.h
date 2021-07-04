@@ -51,6 +51,7 @@ struct edge
     char _dir(){ return (fir->row == sec->row)?'H':'V'; }
     void _make_edge(la_Vertex2d *x, la_Vertex2d *y){ fir = x; sec = y; }
     la_Edge operator=(la_Edge a){ fir = a.fir; sec = a.sec; return a; }
+    void _print(){ printf("(%d,%d)<->(%d,%d)\n", fir->row, fir->col, sec->row, sec->col); }
 };
 
 struct net2d
@@ -65,8 +66,9 @@ struct net2d
     {
         int pinnum = 0;
         for(auto a : vertex) if(a->is_pin) pinnum++;
-        return 1/(double)edge.size()+pinnum;
+        return 1.0/(double)edge.size()+pinnum;
     }
+    void _printf(){ printf("%d\n", id); for(auto e : edge) e._print(); }
 };
 
 struct wire
