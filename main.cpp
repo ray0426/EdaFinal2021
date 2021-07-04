@@ -82,6 +82,8 @@ int main(int argc, char **argv)
         netSets.push_back(netSet);
     }
 
+
+    vector<TwoPinNets> origin = netSets;
     int ite = 1;
     bool needBLMR = true;
     int nowScore = evaluate(gSupGraph, netSets);
@@ -174,6 +176,8 @@ int main(int argc, char **argv)
         ite++;
     }
 
+    ans.push_back(origin);
+    
     for (auto s : scoreRecord)
     {
         cout << s << "\n";
