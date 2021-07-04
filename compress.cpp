@@ -705,7 +705,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
     vector<vector<BLMRgrid>> BLMRmap;
     vector<BLMRgrid> bufferVec;
     BLMRgrid buffer;
-    buffer.cost = -1;
+    buffer.cost = std::numeric_limits<int>::max();
     buffer.isFixed = false;
     for (int i = 0; i < graph.size(); i++) {
         bufferVec.clear();
@@ -867,10 +867,10 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
     return;
 }
 int findPath (vector<Pos>& list, vector<vector<BLMRgrid>>& map) {
-    int ans;
-    int nowCost = -1;
+    int ans = 0;
+    int nowCost = -100;
     for (int i = 0; i < list.size(); i++) {
-        if (nowCost == -1 || nowCost > map[list[i].row - 1][list[i].col - 1].cost) {
+        if (nowCost == -100 || nowCost > map[list[i].row - 1][list[i].col - 1].cost) {
             nowCost = map[list[i].row - 1][list[i].col - 1].cost;
             ans = i;
         }
@@ -922,7 +922,7 @@ bool needChange(BLMRgrid stepGrid, int nowCost, int nowLen, bool isBLC) {
     if (stepGrid.isFixed) {
         return false;
     } else if (isBLC) {
-        if (stepGrid.cost == -1 || !stepGrid.isBLC || stepGrid.cost > nowCost) {
+        if (!stepGrid.isBLC || stepGrid.cost > nowCost) {
             return true;
         }
     } else {
