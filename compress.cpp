@@ -254,10 +254,7 @@ void MergeNet (vector<Route2D>& routes) {
 
     for (int i = 0; i < routes.size(); i++) {
         for (int j = i + 1; j < routes.size(); j++) {
-            // cout << i <<" "<< j <<endl;
             if (isLineConnect(routes[i],routes[j])) {
-                // PrintRoute2D(routes[i]);
-                // PrintRoute2D(routes[j]);
                 isMerged = false;
                 for (auto p: merged) {
                     if (p == i || p == j) {
@@ -270,16 +267,13 @@ void MergeNet (vector<Route2D>& routes) {
                     merged.push_back(i);
                     merged.push_back(j);
                     routes.push_back(mergeLine(routes[i],routes[j]));
-                    // cout << "block" << endl;
-                    // cout << merged.size() << endl;
-                    // PrintNet2D(flatenNets[k]);
                 }
             }
         }
     }
     sort(merged.begin(), merged.end(), [](int a, int b)
          { return a > b; }); //decreasing
-    // cout << "merged" << endl;
+
     for (auto p: merged) {
         routes.erase(routes.begin() + p);
     }
@@ -295,7 +289,6 @@ TwoPinNets CreateNetSet(Problem* pro, string& name) {
     g.h = 0;
     g.v = 0;
     vector<GridSupply> vec;
-    // cout << "setting";
     for (int i = 0; i < rowBound; i++) {
         vec.clear();
         for (int j = 0; j < colBound; j++){
@@ -303,36 +296,13 @@ TwoPinNets CreateNetSet(Problem* pro, string& name) {
         }
         a.usage.push_back(vec);
     }
-
-    // for (auto r : a.usage)
-    // {
-    //     for (auto g : r)
-    //     {
-    //         PrintGridSupply(g);
-    //     }
-    //     cout << endl;
-    // }
     return a;
 }
 void changeTwoPinNet(TwoPinNets &netSet, TwoPinRoute2D &newNet) {
 
-    
-    // for (auto a: netSet.usage) {
-    //         for (auto b: a) {
-    //             PrintGridSupply(b);
-    //         }
-    //         cout << endl;
-    // }
-    // cout << endl;
-
-    // cout << "clean" << endl;
     for (int i = 0; i < netSet.net.size(); i++) {
         if (isPosSame(netSet.net[i].ePin,newNet.ePin) && isPosSame(netSet.net[i].sPin,newNet.sPin)) {
             
-            // for (auto line: netSet.net[i].route) {
-            //     PrintRoute2D(line);
-            // }
-            // cout << endl;
 
             changeUsage(netSet.usage, netSet.net[i], false);
             netSet.net.erase(netSet.net.begin() + i);
@@ -340,27 +310,7 @@ void changeTwoPinNet(TwoPinNets &netSet, TwoPinRoute2D &newNet) {
         }
     }
 
-    // for (auto a: netSet.usage) {
-    //     for (auto b: a) {
-    //         PrintGridSupply(b);
-    //     }
-    //     cout << endl;
-    // }
-    // cout << endl;
-
-    // cout << "add" << endl;
-    // for (auto line: newNet.route) {
-    //     PrintRoute2D(line);
-    // }
-    // cout << endl;
     changeUsage(netSet.usage, newNet);
-    // for (auto a: netSet.usage) {
-    //     for (auto b: a) {
-    //         PrintGridSupply(b);
-    //     }
-    //     cout << endl;
-    // }
-    // cout << endl;
 
     netSet.net.push_back(newNet);
 }
@@ -415,7 +365,7 @@ vector<vector<GridSupply>> GenerateGridSupplyGraph (Problem* pro) {
     int vSupply = 0;
     int rowBound = pro->GGridBD[2];
     int colBound = pro->GGridBD[3];
-    //cout << rowBound << colBound;
+
     vector<vector<GridSupply>> graph;
     vector<GridSupply> rowGraph;
     GridSupply grid;
@@ -423,14 +373,13 @@ vector<vector<GridSupply>> GenerateGridSupplyGraph (Problem* pro) {
     int rId, cId, delta;
     Layer layer;
 
-    //counting defaultsupply
     for (Layer lay: pro->layers) {
         if (lay.direction == 'H')
             hSupply += lay.defaultsupply;
         else if (lay.direction == 'V')
             vSupply += lay.defaultsupply;
     }
-    // cout << hSupply << " " << vSupply;
+
     //assert defaultsupply to grids
     for (int i = 0; i < rowBound; i++) {
         rowGraph.clear();
@@ -452,7 +401,7 @@ vector<vector<GridSupply>> GenerateGridSupplyGraph (Problem* pro) {
         else if (layer.direction == 'V') graph.at(rId-1)[cId-1].v += delta;
     }
 
-    //blockage also have demand     // here to change
+    //blockage also have demand     
     for (auto cell: pro->cellinsts) {
         for (auto mc: pro->masterCells) {
             if (cell.MasterCellName == mc.name) {
@@ -591,13 +540,6 @@ vector<Route2D> FindRoute (vector<Route2D>& ref, Pos sPin, Pos ePin) {
 }
 void FindRouteRaw (vector<Route2D>* route, vector<Route2D>& ref, Pos sPin, Pos ePin) {
     //return with routing [(sPin,eP0),(sP1,eP1),....,(sPn,ePn),(ePin,ePin)]
-    // PrintPos(sPin);
-    // PrintPos(ePin);
-    // cout << endl;
-    // for (auto r : *route) {
-    //     PrintRoute2D(r);
-    // }
-    // cout << endl;
 
     Pos end;
     Pos start;
@@ -619,8 +561,6 @@ void FindRouteRaw (vector<Route2D>* route, vector<Route2D>& ref, Pos sPin, Pos e
         line = ref.at(j);
         end = line.eIdx;
         start = line.sIdx;
-        // PrintRoute2D(line);
-        // cout << endl;
 
         // test whether line is in route already
         for (auto usedline: *route) {
@@ -641,9 +581,6 @@ void FindRouteRaw (vector<Route2D>* route, vector<Route2D>& ref, Pos sPin, Pos e
                 for (int i = min(end.row, start.row); i <= max(end.row, start.row); i++){
                     Pin.row = i;
 
-                    // PrintPos(Pin);
-                    // cout << endl;
-
                     FindRouteRaw(route, ref, Pin, ePin);
                     if (isPosSame(route->back().eIdx,ePin) && isPosSame(route->back().sIdx,ePin)) {
                         return;
@@ -653,9 +590,6 @@ void FindRouteRaw (vector<Route2D>* route, vector<Route2D>& ref, Pos sPin, Pos e
                 Pin.row = start.row;
                 for (int i = min(end.col, start.col); i <= max(end.col, start.col); i++){
                     Pin.col = i;
-
-                    // PrintPos(Pin);
-                    // cout << endl;
 
                     FindRouteRaw(route, ref, Pin, ePin);
                     if (isPosSame(route->back().eIdx,ePin) && isPosSame(route->back().sIdx,ePin)) {
@@ -670,7 +604,6 @@ void FindRouteRaw (vector<Route2D>* route, vector<Route2D>& ref, Pos sPin, Pos e
         route->pop_back();
     }
     return;
-    // return vector<Pos>();
 }
 
 //used only after finish a inter of Net rerouting
@@ -686,20 +619,6 @@ void SortTaskQueue (vector<TwoPinRoute2D>& twoPinNets, vector<vector<GridSupply>
         twoPinNets.push_back(chosenNet);
     } else {
         sort(twoPinNets.begin(), twoPinNets.end(), [ref](TwoPinRoute2D a, TwoPinRoute2D b) {
-            // PrintPos(a.sPin);
-            // PrintPos(a.ePin);
-            // cout << endl;
-            // for (auto k: a.route) {
-            //     PrintRoute2D(k);
-            // }
-            // PrintPos(b.sPin);
-            // PrintPos(b.ePin);
-            // cout << endl;
-            // for (auto k: b.route) {
-            //     PrintRoute2D(k);
-            // }
-            // cout << endl;
-
             return score(a, ref) >= score(b, ref);
         });
     }
@@ -728,7 +647,7 @@ int score(TwoPinRoute2D twoPinNet, vector<vector<GridSupply>>* graph) {
             }
         }
     }
-    // cout << score << endl;
+
     return score;
 }
 int lineLen (Pos start, Pos end) {
@@ -741,8 +660,6 @@ int RerouteNet (vector<TwoPinRoute2D>& twoPinNets, vector<TwoPinRoute2D>& reRout
     bool isReRouted;
     for (int i = 0; i < twoPinNets.size(); i++) {
         isReRouted = false;
-        // PrintTwoPinNet(twoPinNets[i]);
-        // cout << endl;
         if (currentBounding == -1 || bounding(twoPinNets.at(i)) < currentBounding) {
             for (auto r: reRouted) {
                 if (isPosSame(r.sPin, twoPinNets[i].sPin) && isPosSame(r.ePin, twoPinNets[i].ePin) && r.name == twoPinNets[i].name) {
@@ -754,7 +671,6 @@ int RerouteNet (vector<TwoPinRoute2D>& twoPinNets, vector<TwoPinRoute2D>& reRout
                 continue;
             }
             currentBounding = bounding(twoPinNets.at(i));
-            // cout << index << endl;
             index = i;
         }
     }
@@ -779,7 +695,6 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
     }
 
     //record
-    // PrintPos(start);
     
     vector<vector<BLMRgrid>> BLMRmap;
     vector<BLMRgrid> bufferVec;
@@ -816,38 +731,19 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
     bool isBLC;
     Pos nextPos;
 
-    // cout << "setting\n";
     //clear now routed net && get operated var
     TwoPinRoute2D newNet = net;
     newNet.route.clear();
     afterRouting(graph, newNet, netSet);
     vector<vector<GridSupply>> usage = netSet.usage;
     vector<vector<EdgeSupply>> supplyG = Grid2EdgeSupply(graph);
-    // for (auto a: supplyG) {
-    //     for (auto b: a) {
-    //         PrintEdgeSupply(b);
-    //     }
-    //     cout << endl;
-    // }
-    // cout << endl;
 
-    // cout << "clear\n";
     //find end
     while (true) { //do until mapIdx == end
         //find grid with less cost
-        // for (auto n: need) {
-        //     PrintPos(n);
-        // }
-        // cout << endl;
+
         needIdx = findPath(need,BLMRmap);
         mapIdx = need[needIdx];
-        // for (auto a: BLMRmap) {
-        //     for (auto b: a) {
-        //         PrintBLMRgrid(b);
-        //     }
-        //     cout << endl;
-        // }
-        // cout << endl;
 
         if (isPosSame(mapIdx,end))
             break;
@@ -923,50 +819,31 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
             }
         }
     }
-    // cout << "find\n";
-    // end back to start
-    // for (auto a: BLMRmap) {
-    //     for (auto b: a) {
-    //         PrintBLMRgrid(b);
-    //     }
-    //     cout << endl;
-    // }
-    // cout << endl;
 
     line.eIdx = end;
     line.sIdx = BLMRmap[end.row - 1][end.col - 1].further;
     while (!isPosSame(line.sIdx, start)) {
         nextPos = BLMRmap[line.sIdx.row - 1][line.sIdx.col - 1].further;
         if (isPininRoute(nextPos,line.eIdx,line.sIdx)) {
-            // cout << "line" << endl;
             line.sIdx = nextPos;
         } else {
-            // cout << "turn" << endl;
-            // PrintPos(nextPos);
-            // PrintPos(line.eIdx);
-            // PrintPos(line.sIdx);
-            // cout << endl;
-
             route.push_back(line);
             line.eIdx = line.sIdx;
             line.sIdx = nextPos;
         }
     }
     route.push_back(line);
-    // cout << "end\n";
+
     //refine
     newNet.route = route;
     afterRouting(graph,  newNet, netSet);
     net = newNet;
     return;
-    // return newNet;
 }
 int findPath (vector<Pos>& list, vector<vector<BLMRgrid>>& map) {
     int ans;
     int nowCost = -1;
     for (int i = 0; i < list.size(); i++) {
-        // cout << nowCost << " ";
-        // cout << map[list[i].row - 1][list[i].col - 1].cost << endl;
         if (nowCost == -1 || nowCost > map[list[i].row - 1][list[i].col - 1].cost) {
             nowCost = map[list[i].row - 1][list[i].col - 1].cost;
             ans = i;
@@ -1006,8 +883,6 @@ int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<G
         }
     }
 
-    // cout << isSkeleton << endl;
-
     eCost = (7 + C3 / exp(C4 * float(eSupply)) + C6 / (pow(2.0, float(ite))) - isSkeleton * w);
     if (eSupply <= 0) {
         PrintRoute2D(line);
@@ -1037,17 +912,13 @@ void Monotonic(vector<vector<GridSupply>> &graph, TwoPinNets &netSet, TwoPinRout
     Route2D line;
     int x;
     int dis;
-    // PrintPos(net.sPin);
-    // PrintPos(net.ePin);
-    // cout << endl;
+
     Pos s = net.sPin;
     if (tester == 1) {
         while (!isPosSame(s,net.ePin)) {
             srand( time(NULL) );
             x = rand();
             dis = lineLen(s, net.ePin);
-            // cout << dis << " ";
-            // cout << abs(s.row - net.ePin.row) << endl;
             if (x % dis < abs(s.row - net.ePin.row)) {
                 if (s.row < net.ePin.row) {
                     line.sIdx = s;
@@ -1077,13 +948,6 @@ void Monotonic(vector<vector<GridSupply>> &graph, TwoPinNets &netSet, TwoPinRout
         }
         MergeNet(route);
     }
-
-
-    // cout << route.size() << endl;
-    // for (auto r: route) {
-    //     PrintRoute2D(r);
-    // }
-    // cout << endl;
 
     // Lshape
     if (tester == 2) {

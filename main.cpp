@@ -113,8 +113,8 @@ int main(int argc, char **argv)
         {
             if (netSets[k].name == queue[reRouteIdx].name)
             {
-                Monotonic(gSupGraph, netSets[k], queue[reRouteIdx], ite);
-                // BLMR(gSupGraph, netSets[k], queue[reRouteIdx], ite);
+                // Monotonic(gSupGraph, netSets[k], queue[reRouteIdx], ite);
+                BLMR(gSupGraph, netSets[k], queue[reRouteIdx], ite);
                 break;
             }
         }
@@ -179,11 +179,11 @@ int main(int argc, char **argv)
 
     ans.push_back(origin);
     
-    //for (auto s : scoreRecord)
-    //{
-        //cout << s << "\n";
-    //}
-    //cout << endl;
+    // for (auto s : scoreRecord)
+    // {
+    //   cout << s << "\n";
+    // }
+    // cout << endl;
 
     vector<vector<Net2D>> flattenNetAnss;
     vector<Net2D> flattenNetAns;
