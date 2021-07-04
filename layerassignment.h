@@ -99,10 +99,12 @@ float _minimum_via_cost(la_Vertex2d *v, int layer, int minLay, Problem *p,
 char *dir, vector<vector<vector<float>>> supply, vector<vector<vector<float>>> demand);
 
 void _quicksort_reordering(vector<la_Net2d> &net, int l, int r);
-void _route_print(la_Route r, Problem *p);
 bool _is_overlap(la_Wire a, la_Wire b);
 void _wire_compress(vector<la_Wire> &w);
-void _layer_assignment_and_print_route(Problem *p, vector<Net2D> &net);
+la_Route *_layer_assignment(Problem *p, vector<Net2D> &net);
+
+double _route_score(Problem *pro, la_Route *r);
+void _route_print(la_Route *r, Problem *p);
 
 #endif
 
