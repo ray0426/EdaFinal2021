@@ -64,6 +64,9 @@ int main(int argc, char **argv)
         for (auto netPin : netPins)
         {
             netRoute = Multi2TwoPinRoute(net, netPin.sIdx, netPin.eIdx);
+            // for (auto n:netRoute.route) {
+            //     PrintRoute2D(n);
+            // }
             // cout << "get Route: ";
             // PrintRoute2D(netPin);
             afterRouting(gSupGraph, netRoute, netSet);
@@ -221,11 +224,16 @@ int main(int argc, char **argv)
             //     cout << endl;
             // }
 
+            // cout << endl;
+            // for (auto line:flattenRoute) {
+            //     PrintRoute2D(line);
+            // }
             MergeNet(flattenRoute);
             // cout << endl;
             // for (auto line:flattenRoute) {
             //     PrintRoute2D(line);
             // }
+            // cout << endl;
             bufferNet2D.route2Ds = flattenRoute;
 
             flattenNetAns.push_back(bufferNet2D);

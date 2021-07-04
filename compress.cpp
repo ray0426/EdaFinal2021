@@ -523,6 +523,7 @@ vector<Route2D> FindRoute (vector<Route2D>& ref, Pos sPin, Pos ePin) {
     vector<Route2D> route;
     Route2D line;
     FindRouteRaw(rawRoute,ref,sPin,ePin);
+
     if (rawRoute->size() == 1) {
         if (isPosSame(sPin,ePin)) {
             line.eIdx = ePin;
@@ -531,11 +532,16 @@ vector<Route2D> FindRoute (vector<Route2D>& ref, Pos sPin, Pos ePin) {
             return route;
         }
     }
+
     for (int i = 0; i < rawRoute->size() - 1; i++) {
-        line.sIdx = i == 0 ? sPin : rawRoute->at(i).sIdx;
-        line.eIdx = rawRoute->at(i + 1).sIdx;
+        line.sIdx = i == 0 ? sPin : route.back().eIdx; //rawRoute->at(i).sIdx;
+        line.eIdx = isPininRoute(rawRoute->at(i).sIdx,rawRoute->at(i).eIdx,rawRoute->at(i+1).sIdx) ? rawRoute->at(i + 1).sIdx : rawRoute->at(i + 1).eIdx;
         route.push_back(line);
     }
+        for (auto n: route) {
+            PrintRoute2D(n);
+        }
+        cout << endl;
     return route;
 }
 void FindRouteRaw (vector<Route2D>* route, vector<Route2D>& ref, Pos sPin, Pos ePin) {
