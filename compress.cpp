@@ -926,6 +926,8 @@ int costOfEdge(Route2D& line, vector<vector<EdgeSupply>>& graph, vector<vector<G
 bool needChange(BLMRgrid stepGrid, int nowCost, int nowLen, bool isBLC) {
     if (stepGrid.isFixed) {
         return false;
+    } else if (stepGrid.cost == std::numeric_limits<int>::max()) {
+        return true;
     } else if (isBLC) {
         if (!stepGrid.isBLC || stepGrid.cost > nowCost) {
             return true;
