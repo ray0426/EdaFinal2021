@@ -701,7 +701,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
     }
 
     //record
-    cout << "record" << endl;
+    // cout << "record" << endl;
     vector<vector<BLMRgrid>> BLMRmap;
     vector<BLMRgrid> bufferVec;
     BLMRgrid buffer;
@@ -725,7 +725,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
     vector<Route2D> route;
 
     //buffer
-    cout << "buffer" << endl;
+    // cout << "buffer" << endl;
     BLMRgrid grid;
     BLMRgrid stepGrid;
     Pos mapIdx;
@@ -738,7 +738,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
     bool isBLC;
     Pos nextPos;
 
-    cout << "clear now routed net && get operated var" << endl;
+    // cout << "clear now routed net && get operated var" << endl;
     TwoPinRoute2D newNet = net;
     newNet.route.clear();
     afterRouting(graph, newNet, netSet);
@@ -748,23 +748,23 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
     //find end
     while (true) { //do until mapIdx == end
         //find grid with less cost
-        cout << "s" << endl;
+        // cout << "s" << endl;
         for (auto k: BLMRmap) {
             for (auto q: k) {
                 PrintBLMRgrid(q);
             }
-            cout << endl;
+            // cout << endl;
         }
-        cout << endl;
+        // cout << endl;
         needIdx = findPath(need,BLMRmap);
-        cout << need.size() << endl;
+        // cout << need.size() << endl;
         mapIdx = need[needIdx];
 
         if (isPosSame(mapIdx,end))
             break;
-        cout << "e" << endl;
+        // cout << "e" << endl;
         need.erase(need.begin() + needIdx);
-        cout << "a" << endl;
+        // cout << "a" << endl;
         line.sIdx = mapIdx;
         BLMRmap[mapIdx.row - 1][mapIdx.col - 1].isFixed = true;
         grid = BLMRmap[mapIdx.row - 1][mapIdx.col - 1];
@@ -772,14 +772,14 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
         PrintPos(mapIdx);
         // cout << supplyG.size() << endl;
         // cout << supplyG[0].size() << endl;
-        cout << "upper" << endl;
+        // cout << "upper" << endl;
         if (mapIdx.row != 1) { // upper
             lineEnd.row = mapIdx.row - 1;
             lineEnd.col = mapIdx.col;
             line.eIdx = lineEnd;
 
             lineSupply = costOfEdge(line, supplyG, usage, ite, skeleton);
-            cout << lineSupply << endl;
+            // cout << lineSupply << endl;
             stepGrid = BLMRmap[lineEnd.row - 1][lineEnd.col - 1];
             if (needChange(stepGrid, grid.cost + lineSupply, grid.len + 1, isBLC)) {
                 stepGrid.cost = grid.cost + lineSupply;
@@ -790,7 +790,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
                 need.push_back(lineEnd);
             }
         }
-        cout << "lower" << endl;
+        // cout << "lower" << endl;
         if (mapIdx.row != supplyG.size()) { // lower
             
             lineEnd.row = mapIdx.row + 1;
@@ -798,7 +798,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
             line.eIdx = lineEnd;
 
             lineSupply = costOfEdge(line, supplyG, usage, ite, skeleton);
-            cout << lineSupply << endl;
+            // cout << lineSupply << endl;
             stepGrid = BLMRmap[lineEnd.row - 1][lineEnd.col - 1];
             if (needChange(stepGrid, grid.cost + lineSupply, grid.len + 1, isBLC)) {
                 stepGrid.cost = grid.cost + lineSupply;
@@ -809,7 +809,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
                 need.push_back(lineEnd);
             }
         }
-        cout << "left" << endl;
+        // cout << "left" << endl;
         if (mapIdx.col != 1) { // left
             
             lineEnd.row = mapIdx.row;
@@ -817,7 +817,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
             line.eIdx = lineEnd;
 
             lineSupply = costOfEdge(line, supplyG, usage, ite, skeleton);
-            cout << lineSupply << endl;
+            // cout << lineSupply << endl;
             stepGrid = BLMRmap[lineEnd.row - 1][lineEnd.col - 1];
             if (needChange(stepGrid, grid.cost + lineSupply, grid.len + 1, isBLC)) {
                 stepGrid.cost = grid.cost + lineSupply;
@@ -828,7 +828,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
                 need.push_back(lineEnd);
             }
         }
-        cout << "right" << endl;
+        // cout << "right" << endl;
         if (mapIdx.col != supplyG.size()) { // right
             //cout << "a" << endl;
             lineEnd.row = mapIdx.row;
@@ -836,7 +836,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
             line.eIdx = lineEnd;
 
             lineSupply = costOfEdge(line, supplyG, usage, ite, skeleton);
-            cout << lineSupply << endl;
+            // cout << lineSupply << endl;
             stepGrid = BLMRmap[lineEnd.row - 1][lineEnd.col - 1];
             //cout << "b" << endl;
             if (needChange(stepGrid, grid.cost + lineSupply, grid.len + 1, isBLC)) {
@@ -849,7 +849,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
             }
         }
     }
-    cout << "futher" << endl;
+    // cout << "futher" << endl;
     line.eIdx = end;
     line.sIdx = BLMRmap[end.row - 1][end.col - 1].further;
     while (!isPosSame(line.sIdx, start)) {
@@ -864,7 +864,7 @@ void BLMR(vector<vector<GridSupply>>& graph, TwoPinNets& netSet, TwoPinRoute2D& 
     }
     route.push_back(line);
 
-    cout << "refine" << endl;
+    // cout << "refine" << endl;
     newNet.route = route;
     afterRouting(graph,  newNet, netSet);
     net = newNet;
@@ -886,7 +886,7 @@ bool isBLCobtained(int &historyLen, Pos &grid, int &gridLen,Pos &start, Pos &end
     float b = 1.5;
     float BLC = float(lineLen(start, end)) * (1 - atan(ite - a) + b);
     float ew = float(historyLen) * float(lineLen(grid, end)) / float(lineLen(start, end));
-    cout << "BLC,ew" << BLC << " " << ew << endl;
+    // cout << "BLC,ew" << BLC << " " << ew << endl;
     return (BLC > ew + float(gridLen));
 }
 //consider skeleton edge

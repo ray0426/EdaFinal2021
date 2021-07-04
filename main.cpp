@@ -53,14 +53,14 @@ int main(int argc, char **argv)
         // cout << net.name << endl;
 
         netSet = CreateNetSet(pro, net.name);
-        cout << "netSetCreate" << endl;
+        // cout << "netSetCreate" << endl;
 
         netSet.skeleton = rsmtAware(net.pin2Ds, pro->GGridBD[0], pro->GGridBD[2],
                                     pro->GGridBD[1], pro->GGridBD[3]);
-        cout << "skeleton created" << endl;
+        // cout << "skeleton created" << endl;
 
         netPins = decomposition(net.pin2Ds);
-        cout << "decompose" << endl;
+        // cout << "decompose" << endl;
         for (auto netPin : netPins)
         {
             netRoute = Multi2TwoPinRoute(net, netPin.sIdx, netPin.eIdx);
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
             //     cout << endl;
             // }
             queue.push_back(netRoute);
-            cout << "afterRouting" << endl;
+            // cout << "afterRouting" << endl;
         }
         netSets.push_back(netSet);
     }
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 
     while (ite < 30 && queue.size() != 0)
     {
-        cout << "reRoute" << endl;
+        // cout << "reRoute" << endl;
         // cout << queue.size() << endl;
 
         reRouteIdx = RerouteNet(queue, reRouted);
@@ -121,13 +121,13 @@ int main(int argc, char **argv)
                 break;
             }
         }
-        cout << "sort" << endl;
+        // cout << "sort" << endl;
         SortTaskQueue(queue, gSupGraph, reRouteIdx);
         // queue.pop_back();               
-        cout << "BLMR" << endl;
+        // cout << "BLMR" << endl;
         for (int j = 0; j < queue.size(); j++)
         {
-            cout << "a" << endl;
+            // cout << "a" << endl;
             needBLMR = true;
             for (int k = 0; k < reRouted.size()*BLMRRatio; k++)
             {
@@ -148,23 +148,23 @@ int main(int argc, char **argv)
                 // cout << netSets[k].name << " " << queue[j].name;
 
                 if (netSets[k].name == queue[j].name)
-                {   cout << "before" << endl;
+                {   // cout << "before" << endl;
                     // for(auto n: queue[j].route) {
                     //     PrintRoute2D(n);
                     // }
 
                     BLMR(gSupGraph, netSets[k], queue[j], ite);
-                    cout << "after" << endl;
+                    // cout << "after" << endl;
                     // for(auto n: queue[j].route) {
                     //     PrintRoute2D(n);
                     // }
-                    cout << endl;
+                    // cout << endl;
                     break;
                 }
             }
         }
         // cout << evaluate part << endl;
-        cout << ite << endl;
+        // cout << ite << endl;
         score = evaluate(gSupGraph, netSets);
         scoreRecord.push_back(score);
         if (nowScore > score)
@@ -185,9 +185,9 @@ int main(int argc, char **argv)
     
     for (auto s : scoreRecord)
     {
-      cout << s << "\n";
+      // cout << s << "\n";
     }
-    cout << endl;
+    // cout << endl;
 
     vector<vector<Net2D>> flattenNetAnss;
     vector<Net2D> flattenNetAns;
@@ -242,7 +242,7 @@ int main(int argc, char **argv)
         flattenNetAnss.push_back(flattenNetAns);
     }
 
-    cout << "find two pin" << endl;
+    // cout << "find two pin" << endl;
     vector<Net2D> twoPin;
     for (auto n : flattenNetAnss[0])
     {
@@ -438,9 +438,9 @@ float evaluate(vector<vector<GridSupply>> &graph, vector<TwoPinNets> &netSet)
             if (g.h < 0 || g.v < 0)
             {
                 isOverflowed = true;
-                cout << "overflowed ";
+                // cout << "overflowed ";
                 PrintGridSupply(g);
-                cout << endl;
+                // cout << endl;
             }
         }
     }
